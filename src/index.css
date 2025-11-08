@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Edu+NSW+ACT+Cursive:wght@400..700&display=swap");
+@import "tailwindcss";
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+    font-family: "Poppins", sans-serif;
+  }
+
+  body {
+    @apply bg-[#0a181d] text-gray-100;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-[#d4a05e] text-gray-900 rounded font-medium hover:bg-[#c49050] transition-colors duration-200 uppercase tracking-wide;
+  }
+
+  .font-stack {
+    font-family: "Stack Sans Headline", sans-serif;
+  }
+
+  .font-educ {
+    font-family: "Edu NSW ACT Cursive", sans-serif;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-transparent text-white border border-[#d4a05e] rounded font-medium hover:bg-[#d4a05e] hover:text-gray-900 transition-colors duration-200;
+  }
+
+  .card-dark {
+    @apply bg-[#0d1f24] rounded border border-[#1a3640] shadow-lg;
+  }
+
+  .badge-available {
+    @apply inline-flex items-center px-3 py-1 text-sm font-medium text-green-400;
+  }
+
+  .badge-unavailable {
+    @apply inline-flex items-center px-3 py-1 text-sm font-medium text-red-400;
+  }
+
+  .input-dark {
+    @apply w-full px-4 py-2 bg-[#0a181d] border border-[#1a3640] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#d4a05e];
+  }
+
+  .table-dark {
+    @apply bg-[#0d1f24] border border-[#1a3640];
+  }
+
+  .table-dark th {
+    @apply bg-[#d4a05e] text-gray-900 font-semibold py-3 px-4 text-left uppercase text-xs tracking-wider;
+  }
+
+  .table-dark td {
+    @apply py-3 px-4 border-b border-[#1a3640] text-gray-300;
+  }
+
+  .header-text h4 {
+    margin-bottom: 0;
+  }
+
+  .header-text h4 b {
+    font-weight: 600;
+    color: #fff !important;
+  }
+
+  .header-text h4 span.small {
+    font-size: 15px;
+  }
+
+  @media (max-width: 767px) {
+    .header-text h4 span.small {
+      font-size: 11px;
+    }
+  }
+}
