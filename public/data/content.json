@@ -101,7 +101,24 @@
     },
     "streetImage": "/images/Hidden-Gloves-Street3.png",
     "lotLayoutImage": "/images/LOT_1.png",
-    "aerialViewImage": "/images/aerial-view.png"
+    "aerialViewImage": "/images/aerial-view.png",
+    "requestTour": {
+      "title": "Request Tour",
+      "description": "When would you like to see this home?",
+      "submitButtonText": "Submit Request"
+    },
+    "customHomeBuilder": {
+      "title": "Need a custom home builder?",
+      "paragraph1": "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
+      "paragraph2": "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
+      "formPlaceholders": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "phone": "Mobile Number",
+        "message": "Tell About Your home"
+      },
+      "submitButtonText": "Submit"
+    }
   },
   "aboutUs": {
     "title": "About Us",

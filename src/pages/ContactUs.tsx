@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
+import { useContentData } from "../hooks/useContentData";
 
 export const ContactUs = () => {
+  const { data } = useContentData();
+
   return (
     <div
       className="min-h-screen"
       style={{ background: "linear-gradient(to right, #242328, #252F40)" }}
     >
-      {/* Page Header */}
       <section className="pt-0 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
@@ -14,7 +16,7 @@ export const ContactUs = () => {
               className="text-5xl md:text-6xl font-bold text-white mb-4"
               style={{ fontFamily: "'Noto Serif', serif" }}
             >
-              Get In{" "}
+              {data?.contactUs?.title || "Get In"}{" "}
               <mark
                 className="text-white"
                 style={{
@@ -22,26 +24,30 @@ export const ContactUs = () => {
                   padding: "5px 2px 2px",
                 }}
               >
-                Touch
+                {data?.contactUs?.highlightedTitle || "Touch"}
               </mark>
             </h1>
             <div className="flex justify-center">
               <div className="max-w-3xl">
                 <p className="text-white text-base mb-4">
-                  Ready to discover your dream home in North McAllen's most
-                  prestigious neighborhood? We're here to help you every step of
-                  the way.
+                  {data?.contactUs?.description ||
+                    "Ready to discover your dream home in North McAllen's most prestigious neighborhood? We're here to help you every step of the way."}
                 </p>
                 <ul className="flex justify-center flex-wrap gap-4 list-none text-sm text-[#5C626F]">
-                  <li className="relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full">
-                    Premium Lots Available
-                  </li>
-                  <li className="relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full">
-                    Exclusive Community
-                  </li>
-                  <li className="relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full">
-                    Prime Location
-                  </li>
+                  {(
+                    data?.contactUs?.features || [
+                      "Premium Lots Available",
+                      "Exclusive Community",
+                      "Prime Location",
+                    ]
+                  ).map((feature, idx) => (
+                    <li
+                      key={idx}
+                      className="relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full"
+                    >
+                      {feature}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -49,14 +55,12 @@ export const ContactUs = () => {
         </div>
       </section>
 
-      {/* Contact Form Section */}
       <section
         className="py-12 px-4 sm:px-6 lg:px-8"
         style={{ background: "linear-gradient(to right, #151E30, #252F40)" }}
       >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Contact Form */}
             <div>
               <div
                 className="rounded-3xl p-6 md:p-8"
@@ -203,9 +207,7 @@ export const ContactUs = () => {
               </div>
             </div>
 
-            {/* Right Column - Contact Info */}
             <div className="space-y-6">
-              {/* Contact Information Card */}
               <div
                 className="rounded-3xl p-6 md:p-8"
                 style={{
@@ -220,7 +222,6 @@ export const ContactUs = () => {
                   Visit Our Sales Office
                 </h4>
 
-                {/* Address */}
                 <div className="flex mb-5">
                   <div
                     className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center mr-3"
@@ -245,15 +246,13 @@ export const ContactUs = () => {
                     >
                       Address
                     </h6>
-                    <p className="text-white text-sm">
-                      Second Street, North McAllen
-                      <br />
-                      Between Frontera Rd and Northgate L.
+                    <p className="text-white text-sm whitespace-pre-line">
+                      {data?.contactUs?.office?.address ||
+                        "Second Street, North McAllen\nBetween Frontera Rd and Northgate L."}
                     </p>
                   </div>
                 </div>
 
-                {/* Phone */}
                 <div className="flex mb-5">
                   <div
                     className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center mr-3"
@@ -275,19 +274,31 @@ export const ContactUs = () => {
                       Phone
                     </h6>
                     <p className="text-white text-sm mb-1">
-                      <a href="tel:9565554678" className="text-white">
-                        (956) 555-GROVE
+                      <a
+                        href={`tel:${
+                          data?.contactUs?.office?.phone?.replace(/\D/g, "") ||
+                          "9565554678"
+                        }`}
+                        className="text-white"
+                      >
+                        {data?.contactUs?.office?.phoneDisplay ||
+                          "(956) 555-GROVE"}
                       </a>
                     </p>
                     <p className="text-white text-sm">
-                      <a href="tel:9565554678" className="text-white">
-                        (956) 555-4678
+                      <a
+                        href={`tel:${
+                          data?.contactUs?.office?.phone?.replace(/\D/g, "") ||
+                          "9565554678"
+                        }`}
+                        className="text-white"
+                      >
+                        {data?.contactUs?.office?.phone || "(956) 555-4678"}
                       </a>
                     </p>
                   </div>
                 </div>
 
-                {/* Email */}
                 <div className="flex mb-5">
                   <div
                     className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center mr-3"
@@ -311,24 +322,31 @@ export const ContactUs = () => {
                     </h6>
                     <p className="text-white text-sm mb-1">
                       <a
-                        href="mailto:info@hiddengroove.com"
+                        href={`mailto:${
+                          data?.contactUs?.office?.email ||
+                          "info@hiddengroove.com"
+                        }`}
                         className="text-white"
                       >
-                        info@hiddengroove.com
+                        {data?.contactUs?.office?.email ||
+                          "info@hiddengroove.com"}
                       </a>
                     </p>
                     <p className="text-white text-sm">
                       <a
-                        href="mailto:sales@hiddengroove.com"
+                        href={`mailto:${
+                          data?.contactUs?.office?.emailSales ||
+                          "sales@hiddengroove.com"
+                        }`}
                         className="text-white"
                       >
-                        sales@hiddengroove.com
+                        {data?.contactUs?.office?.emailSales ||
+                          "sales@hiddengroove.com"}
                       </a>
                     </p>
                   </div>
                 </div>
 
-                {/* Office Hours */}
                 <div className="flex">
                   <div
                     className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center mr-3"
@@ -354,14 +372,17 @@ export const ContactUs = () => {
                       Office Hours
                     </h6>
                     <p className="text-white text-sm mb-1">
-                      Mon - Fri: 9AM - 6PM
+                      {data?.contactUs?.office?.hours?.weekdays ||
+                        "Mon - Fri: 9AM - 6PM"}
                     </p>
-                    <p className="text-white text-sm">Sat - Sun: 10AM - 4PM</p>
+                    <p className="text-white text-sm">
+                      {data?.contactUs?.office?.hours?.weekends ||
+                        "Sat - Sun: 10AM - 4PM"}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Ready to Tour Card */}
               <div
                 className="text-center rounded-3xl p-6 md:p-8"
                 style={{
@@ -403,7 +424,6 @@ export const ContactUs = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="pt-0">
         <section
           className="py-4 flex items-center"
@@ -413,14 +433,15 @@ export const ContactUs = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="md:col-span-8">
                 <p className="text-white text-sm font-medium">
-                  © Copyright 2025, Hidden Groove Estates | All rights reserved.
+                  {data?.footer?.copyright ||
+                    "© Copyright 2025, Hidden Groove Estates | All rights reserved."}
                 </p>
               </div>
               <div className="md:col-span-4">
                 <ul className="flex justify-start md:justify-end space-x-10 list-none items-center">
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.privacy || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Privacy Policy
@@ -428,7 +449,7 @@ export const ContactUs = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.terms || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Terms
@@ -436,7 +457,7 @@ export const ContactUs = () => {
                   </li>
                   <li>
                     <a
-                      href="contact-us.html"
+                      href={data?.footer?.links?.contact || "contact-us.html"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Contact

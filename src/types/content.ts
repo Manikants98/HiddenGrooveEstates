@@ -46,6 +46,25 @@ export interface GoldenBox {
   description: string;
 }
 
+export interface RequestTourContent {
+  title: string;
+  description: string;
+  submitButtonText: string;
+}
+
+export interface CustomHomeBuilderContent {
+  title: string;
+  paragraph1: string;
+  paragraph2: string;
+  formPlaceholders: {
+    fullName: string;
+    email: string;
+    phone: string;
+    message: string;
+  };
+  submitButtonText: string;
+}
+
 export interface HomeContent {
   slider: SliderConfig;
   lots: Lot[];
@@ -54,6 +73,8 @@ export interface HomeContent {
   streetImage: string;
   lotLayoutImage: string;
   aerialViewImage: string;
+  requestTour: RequestTourContent;
+  customHomeBuilder: CustomHomeBuilderContent;
 }
 
 export interface AboutUsContent {

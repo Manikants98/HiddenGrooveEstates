@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useContentData } from "../hooks/useContentData";
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { data } = useContentData();
 
   // Determine background based on current page
   const getBackground = () => {
@@ -24,7 +26,10 @@ export const Header = () => {
           {/* Logo - Left */}
           <Link to="/" className="flex items-center me-5">
             <img
-              src="https://revtripindia.com/hidden_site/images/logo1.png"
+              src={
+                data?.header?.logo ||
+                "https://revtripindia.com/hidden_site/images/logo1.png"
+              }
               alt="Hidden Groove Estates Logo"
               className="h-24 md:h-28 w-auto"
             />
@@ -65,13 +70,13 @@ export const Header = () => {
               style={{ fontFamily: "'Edu NSW ACT Cursive', cursive" }}
             >
               <span className="text-[#D1AB2A] text-lg font-semibold block">
-                The Most Prestigious
+                {data?.header?.tagline?.line1 || "The Most Prestigious"}
               </span>
               <span className="text-white text-xl font-semibold block">
-                Neighborhood
+                {data?.header?.tagline?.line2 || "Neighborhood"}
               </span>
               <span className="text-[#D1AB2A] text-sm font-normal block">
-                in North Mcallen
+                {data?.header?.tagline?.line3 || "in North Mcallen"}
               </span>
             </h4>
           </div>

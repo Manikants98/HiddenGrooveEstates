@@ -1,25 +1,29 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "../utils/formatters";
+import { useContentData } from "../hooks/useContentData";
 import { samplePropertyListing } from "../data/sampleData";
 
 export const Home = () => {
-  const { property, lots } = samplePropertyListing;
+  const { data } = useContentData();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const slides = [
+  const property: any = data?.home?.property || samplePropertyListing.property;
+  const lots = data?.home?.lots || samplePropertyListing.lots;
+  const slides = data?.home?.slider?.images || [
     "/images/banner.jpg",
     "/images/Hidden-Gloves-Street1.png",
     "/images/Hidden-Gloves-Street2.png",
   ];
+  const sliderInterval = data?.home?.slider?.autoAdvanceInterval || 5000;
 
-  // Auto-advance slider
   useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, sliderInterval);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length, sliderInterval]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -31,10 +35,8 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen" style={{ background: "#0A181D" }}>
-      {/* Hero Slider Section */}
       <section className="px-4 md:px-10 py-6">
         <div className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
-          {/* Slides */}
           {slides.map((slide, index) => (
             <div
               key={index}
@@ -50,7 +52,6 @@ export const Home = () => {
             </div>
           ))}
 
-          {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
             className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/50 rounded-full flex items-center justify-center text-white text-2xl transition-all"
@@ -66,7 +67,6 @@ export const Home = () => {
             ›
           </button>
 
-          {/* Dots Indicator */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
             {slides.map((_, index) => (
               <button
@@ -84,12 +84,9 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="py-6 px-10 sm:px-10 lg:px-10">
         <div className="mx-auto">
-          {/* Lots Table and Street Image Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-            {/* Left Column - Lots Table */}
             <div className="lg:col-span-5">
               <div
                 className="rounded-xl overflow-hidden shadow-lg"
@@ -156,36 +153,34 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Right Column - Street Image */}
             <div className="lg:col-span-7">
               <img
-                src="/images/Hidden-Gloves-Street3.png"
+                src={
+                  data?.home?.streetImage || "/images/Hidden-Gloves-Street3.png"
+                }
                 alt="Hidden Groove Estates Street View"
                 className="w-full h-[240px] object-cover rounded-xl"
               />
             </div>
           </div>
 
-          {/* Lot Layout and Golden Box Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-8">
-            {/* Left Column - Lot Layout Image */}
             <div className="lg:col-span-4">
               <div
-                className="rounded-xl h-[210px] overflow-hidden flex items-center justify-center shadow-lg p-3 text-center"
+                className="rounded-xl h-[185px] overflow-hidden flex items-center justify-center shadow-lg p-3 text-center"
                 style={{
                   backgroundColor: "#18272B",
                   border: "1px solid #3C412A",
                 }}
               >
                 <img
-                  src="/images/LOT_1.png"
+                  src={data?.home?.lotLayoutImage || "/images/LOT_1.png"}
                   alt="Lot Layout"
                   className="h-auto object-contain rounded-xl"
                 />
               </div>
             </div>
 
-            {/* Right Column - Golden Info Box */}
             <div className="lg:col-span-8">
               <div
                 className="rounded-2xl p-6 md:p-8 text-center shadow-lg"
@@ -197,29 +192,28 @@ export const Home = () => {
                   className="text-white text-xl md:text-2xl font-semibold mb-3"
                   style={{ fontFamily: "'Noto Serif', serif" }}
                 >
-                  An Exclusive And Highly Secluded 8-lot
+                  {data?.home?.goldenBox?.title ||
+                    "An Exclusive And Highly Secluded 8-lot"}
                 </h4>
                 <h4
                   className="text-white text-xl md:text-2xl font-semibold mb-4"
                   style={{ fontFamily: "'Noto Serif', serif" }}
                 >
-                  Subdivision Situated On Second Street (N Col Rowe Blvd)
+                  {data?.home?.goldenBox?.subtitle ||
+                    "Subdivision Situated On Second Street (N Col Rowe Blvd)"}
                 </h4>
                 <h5
                   className="text-white text-lg"
                   style={{ fontFamily: "'Noto Serif', serif" }}
                 >
-                  Between
-                  <br />
-                  Frontera Rd And Northgate Ln.
+                  {data?.home?.goldenBox?.description ||
+                    "Between Frontera Rd And Northgate Ln."}
                 </h5>
               </div>
             </div>
           </div>
 
-          {/* Main Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Property Details */}
             <div className="lg:col-span-2">
               <div
                 className="rounded-3xl p-8 shadow-lg"
@@ -272,7 +266,7 @@ export const Home = () => {
                           Living Area
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Square Feet
+                          {property.livingArea || "Square Feet"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -284,7 +278,9 @@ export const Home = () => {
                           Status
                         </th>
                         <td className="py-3 px-4 text-sm">
-                          <span className="text-[#71DF82]">Active</span>
+                          <span className="text-[#71DF82]">
+                            {property.status || "Active"}
+                          </span>
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -320,10 +316,9 @@ export const Home = () => {
                           HOA
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          City Place at Chapin
+                          {property.hoa || "City Place at Chapin"}
                         </td>
                       </tr>
-                      {/* Exterior Section Header */}
                       <tr>
                         <th
                           colSpan={2}
@@ -349,9 +344,10 @@ export const Home = () => {
                         >
                           Fencing
                         </th>
-                        <td className="py-3 px-4 text-white text-sm">None</td>
+                        <td className="py-3 px-4 text-white text-sm">
+                          {property.fencing || "None"}
+                        </td>
                       </tr>
-                      {/* Amenities / Utilities Section Header */}
                       <tr>
                         <th
                           colSpan={2}
@@ -381,7 +377,7 @@ export const Home = () => {
                           style={{ border: "1px solid #2d4348" }}
                           className="py-3 px-4 text-white text-sm"
                         >
-                          Water Connected
+                          {property.utilities || "Water Connected"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -393,7 +389,7 @@ export const Home = () => {
                           Sewer
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          City Sewer
+                          {property.sewer || "City Sewer"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -408,7 +404,8 @@ export const Home = () => {
                           style={{ border: "1px solid #2d4348" }}
                           className="py-3 px-4 text-white text-sm"
                         >
-                          Irrigation Water District: Other
+                          {property.irrigation ||
+                            "Irrigation Water District: Other"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -423,10 +420,9 @@ export const Home = () => {
                           style={{ border: "1px solid #2d4348" }}
                           className="py-3 px-4 text-white text-sm"
                         >
-                          Property Owners' Assoc.
+                          {property.hoaAmenities || "Property Owners' Assoc."}
                         </td>
                       </tr>
-                      {/* Location Section Header */}
                       <tr>
                         <th
                           colSpan={2}
@@ -476,7 +472,9 @@ export const Home = () => {
                         >
                           Community Features
                         </th>
-                        <td className="py-3 px-4 text-white text-sm">Gated</td>
+                        <td className="py-3 px-4 text-white text-sm">
+                          {property.communityFeatures || "Gated"}
+                        </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
                         <th
@@ -487,7 +485,7 @@ export const Home = () => {
                           Eementarv School
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Lincoln
+                          {property.elementarySchool || "Lincoln"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -499,7 +497,7 @@ export const Home = () => {
                           High School
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Economedes H.S.
+                          {property.highSchool || "Economedes H.S."}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -511,7 +509,7 @@ export const Home = () => {
                           Middle School District
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Edinburg ISD
+                          {property.middleSchoolDistrict || "Edinburg ISD"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -523,7 +521,7 @@ export const Home = () => {
                           Elementary School District
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Edinburg ISD
+                          {property.elementarySchoolDistrict || "Edinburg ISD"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -535,7 +533,7 @@ export const Home = () => {
                           Middle School
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Memorial
+                          {property.middleSchool || "Memorial"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -547,7 +545,7 @@ export const Home = () => {
                           High School District
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Edinburg ISD
+                          {property.highSchoolDistrict || "Edinburg ISD"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -562,10 +560,9 @@ export const Home = () => {
                           style={{ border: "1px solid #2d4348" }}
                           className="py-3 px-4 text-white text-sm"
                         >
-                          City Place At Chapin Lot 25
+                          {property.apn || "City Place At Chapin Lot 25"}
                         </td>
                       </tr>
-                      {/* Lot/ Land Details Section Header */}
                       <tr>
                         <th
                           colSpan={2}
@@ -592,7 +589,7 @@ export const Home = () => {
                           Road Frontage
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          City Street
+                          {property.roadFrontage || "City Street"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -603,7 +600,9 @@ export const Home = () => {
                         >
                           Road Surface
                         </th>
-                        <td className="py-3 px-4 text-white text-sm">Paved</td>
+                        <td className="py-3 px-4 text-white text-sm">
+                          {property.roadSurface || "Paved"}
+                        </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
                         <th
@@ -614,7 +613,7 @@ export const Home = () => {
                           Possible Use
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          Residential
+                          {property.possibleUse || "Residential"}
                         </td>
                       </tr>
                       <tr>
@@ -629,7 +628,7 @@ export const Home = () => {
                           style={{ border: "1px solid #2d4348" }}
                           className="py-3 px-4 text-white text-sm"
                         >
-                          Level
+                          {property.topography || "Level"}
                         </td>
                       </tr>
                     </tbody>
@@ -666,9 +665,7 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Right Column - Forms */}
             <div className="space-y-6">
-              {/* Request Tour */}
               <div
                 className="rounded-3xl p-6 shadow-lg"
                 style={{
@@ -681,14 +678,15 @@ export const Home = () => {
                     className="text-[#D1AB2A] text-lg font-semibold uppercase mb-3"
                     style={{ fontFamily: "'Noto Serif', serif" }}
                   >
-                    Request Tour
+                    {data?.home?.requestTour?.title || "Request Tour"}
                   </h4>
                   <p className="text-white text-sm mb-4">
-                    When would you like to see this home?
+                    {data?.home?.requestTour?.description ||
+                      "When would you like to see this home?"}
                   </p>
                 </div>
                 <img
-                  src="/images/aerial-view.png"
+                  src={data?.home?.aerialViewImage || "/images/aerial-view.png"}
                   alt="Aerial View"
                   className="w-full rounded-2xl mb-4"
                 />
@@ -759,13 +757,13 @@ export const Home = () => {
                         e.currentTarget.style.transform = "translate(0px, 0px)";
                       }}
                     >
-                      Submit Request
+                      {data?.home?.requestTour?.submitButtonText ||
+                        "Submit Request"}
                     </button>
                   </div>
                 </form>
               </div>
 
-              {/* Custom Home Builder */}
               <div
                 className="rounded-3xl p-6 shadow-lg"
                 style={{
@@ -778,25 +776,16 @@ export const Home = () => {
                     className="text-[#D1AB2A] text-lg font-semibold mb-3"
                     style={{ fontFamily: "'Noto Serif', serif" }}
                   >
-                    Need a custom home builder?
+                    {data?.home?.customHomeBuilder?.title ||
+                      "Need a custom home builder?"}
                   </h4>
                   <p className="text-white text-sm mb-4 leading-relaxed text-justify">
-                    We specialize in turning your vision of a dream home into
-                    reality. As a premier custom home builder, we offer
-                    personalized service, expert craftsmanship, and a commitment
-                    to quality that shows in every detail. Whether you're
-                    building your forever home or a unique getaway, we work
-                    closely with you from design to move-in day, ensuring your
-                    home reflects your lifestyle, needs, and personality.
+                    {data?.home?.customHomeBuilder?.paragraph1 ||
+                      "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality."}
                   </p>
                   <p className="text-white text-sm mb-6 leading-relaxed text-justify">
-                    With decades of experience and a passion for excellence, we
-                    handle everything from custom floor plans and premium
-                    materials to the latest in energy efficiency and smart home
-                    technology. No two families are the same, and your home
-                    shouldn't be either. Let us help you create a truly
-                    one-of-a-kind space—built to last, designed to inspire.
-                    Contact us today to start building something extraordinary.
+                    {data?.home?.customHomeBuilder?.paragraph2 ||
+                      "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary."}
                   </p>
                 </div>
                 <form id="ContactForm" className="space-y-4">
@@ -805,7 +794,10 @@ export const Home = () => {
                       name="first_name"
                       type="text"
                       required
-                      placeholder="Full Name"
+                      placeholder={
+                        data?.home?.customHomeBuilder?.formPlaceholders
+                          ?.fullName || "Full Name"
+                      }
                       className="w-full px-4 py-3 rounded-md border text-white placeholder-gray-400 focus:outline-none text-sm"
                       style={{
                         backgroundColor: "#324157",
@@ -819,7 +811,10 @@ export const Home = () => {
                       name="email"
                       type="text"
                       required
-                      placeholder="Email Address"
+                      placeholder={
+                        data?.home?.customHomeBuilder?.formPlaceholders
+                          ?.email || "Email Address"
+                      }
                       className="w-full px-4 py-3 rounded-md border text-white placeholder-gray-400 focus:outline-none text-sm"
                       style={{
                         backgroundColor: "#324157",
@@ -833,7 +828,10 @@ export const Home = () => {
                       name="phone"
                       type="text"
                       required
-                      placeholder="Mobile Number"
+                      placeholder={
+                        data?.home?.customHomeBuilder?.formPlaceholders
+                          ?.phone || "Mobile Number"
+                      }
                       className="w-full px-4 py-3 rounded-md border text-white placeholder-gray-400 focus:outline-none text-sm"
                       style={{
                         backgroundColor: "#324157",
@@ -847,7 +845,10 @@ export const Home = () => {
                       name="message"
                       required
                       rows={3}
-                      placeholder="Tell About Your home"
+                      placeholder={
+                        data?.home?.customHomeBuilder?.formPlaceholders
+                          ?.message || "Tell About Your home"
+                      }
                       className="w-full px-4 py-3 rounded-md border text-white placeholder-gray-400 focus:outline-none text-sm"
                       style={{
                         backgroundColor: "#324157",
@@ -879,7 +880,8 @@ export const Home = () => {
                         e.currentTarget.style.transform = "translate(0px, 0px)";
                       }}
                     >
-                      Submit
+                      {data?.home?.customHomeBuilder?.submitButtonText ||
+                        "Submit"}
                     </button>
                   </div>
                 </form>
@@ -889,7 +891,6 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="pt-0">
         <section
           className="py-4 flex items-center"
@@ -899,14 +900,15 @@ export const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="md:col-span-8">
                 <p className="text-white text-sm font-medium">
-                  © Copyright 2025, Hidden Groove Estates | All rights reserved.
+                  {data?.footer?.copyright ||
+                    "© Copyright 2025, Hidden Groove Estates | All rights reserved."}
                 </p>
               </div>
               <div className="md:col-span-4">
                 <ul className="flex justify-start md:justify-end space-x-10 list-none items-center">
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.privacy || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Privacy Policy
@@ -914,7 +916,7 @@ export const Home = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.terms || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Terms
@@ -922,7 +924,7 @@ export const Home = () => {
                   </li>
                   <li>
                     <a
-                      href="contact-us.html"
+                      href={data?.footer?.links?.contact || "contact-us.html"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Contact

@@ -12,7 +12,34 @@ export const Admin = () => {
 
   useEffect(() => {
     if (data) {
-      setFormData(JSON.parse(JSON.stringify(data))); // Deep copy
+      const dataCopy = JSON.parse(JSON.stringify(data));
+
+      if (!dataCopy.home.requestTour) {
+        dataCopy.home.requestTour = {
+          title: "Request Tour",
+          description: "When would you like to see this home?",
+          submitButtonText: "Submit Request",
+        };
+      }
+
+      if (!dataCopy.home.customHomeBuilder) {
+        dataCopy.home.customHomeBuilder = {
+          title: "Need a custom home builder?",
+          paragraph1:
+            "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
+          paragraph2:
+            "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
+          formPlaceholders: {
+            fullName: "Full Name",
+            email: "Email Address",
+            phone: "Mobile Number",
+            message: "Tell About Your home",
+          },
+          submitButtonText: "Submit",
+        };
+      }
+
+      setFormData(dataCopy);
     }
   }, [data]);
 
@@ -164,7 +191,6 @@ export const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
-      {/* Header */}
       <div className="bg-white shadow-lg border-b-2 border-blue-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -217,7 +243,6 @@ export const Admin = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
         <div className="bg-white rounded-lg shadow-lg mb-6 border-2 border-gray-200">
           <div className="flex">
             {(["home", "about", "contact", "header", "footer"] as const).map(
@@ -244,13 +269,11 @@ export const Admin = () => {
           </div>
         </div>
 
-        {/* Form Content */}
         <div className="bg-white rounded-lg shadow p-6">
           {activeTab === "home" && (
             <div className="space-y-8">
               <h2 className="text-2xl font-bold mb-6">Home Page Content</h2>
 
-              {/* Slider Section */}
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Hero Slider
@@ -310,7 +333,6 @@ export const Admin = () => {
                 </div>
               </div>
 
-              {/* Lots Section */}
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Lots
@@ -413,7 +435,6 @@ export const Admin = () => {
                 </div>
               </div>
 
-              {/* Property Details */}
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Property Details
@@ -774,7 +795,6 @@ export const Admin = () => {
                 </div>
               </div>
 
-              {/* Golden Box */}
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Golden Info Box
@@ -831,7 +851,6 @@ export const Admin = () => {
                 </div>
               </div>
 
-              {/* Images */}
               <div>
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Images
@@ -873,6 +892,237 @@ export const Admin = () => {
                       onChange={(e) =>
                         handleChange(
                           ["home", "aerialViewImage"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pb-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
+                  Request Tour Section
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.home.requestTour.title}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "requestTour", "title"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={formData.home.requestTour.description}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "requestTour", "description"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Submit Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.home.requestTour.submitButtonText}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "requestTour", "submitButtonText"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pb-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
+                  Custom Home Builder Section
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.home.customHomeBuilder.title}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "customHomeBuilder", "title"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Paragraph 1
+                    </label>
+                    <textarea
+                      value={formData.home.customHomeBuilder.paragraph1}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "customHomeBuilder", "paragraph1"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Paragraph 2
+                    </label>
+                    <textarea
+                      value={formData.home.customHomeBuilder.paragraph2}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "customHomeBuilder", "paragraph2"],
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      rows={4}
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800 border-l-4 border-green-500 pl-3">
+                      Form Placeholders
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name Placeholder
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            formData.home.customHomeBuilder.formPlaceholders
+                              .fullName
+                          }
+                          onChange={(e) =>
+                            handleChange(
+                              [
+                                "home",
+                                "customHomeBuilder",
+                                "formPlaceholders",
+                                "fullName",
+                              ],
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Placeholder
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            formData.home.customHomeBuilder.formPlaceholders
+                              .email
+                          }
+                          onChange={(e) =>
+                            handleChange(
+                              [
+                                "home",
+                                "customHomeBuilder",
+                                "formPlaceholders",
+                                "email",
+                              ],
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Placeholder
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            formData.home.customHomeBuilder.formPlaceholders
+                              .phone
+                          }
+                          onChange={(e) =>
+                            handleChange(
+                              [
+                                "home",
+                                "customHomeBuilder",
+                                "formPlaceholders",
+                                "phone",
+                              ],
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Message Placeholder
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            formData.home.customHomeBuilder.formPlaceholders
+                              .message
+                          }
+                          onChange={(e) =>
+                            handleChange(
+                              [
+                                "home",
+                                "customHomeBuilder",
+                                "formPlaceholders",
+                                "message",
+                              ],
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Submit Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.home.customHomeBuilder.submitButtonText}
+                      onChange={(e) =>
+                        handleChange(
+                          ["home", "customHomeBuilder", "submitButtonText"],
                           e.target.value
                         )
                       }

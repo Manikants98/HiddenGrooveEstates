@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
+import { useContentData } from "../hooks/useContentData";
 
 export const AboutUs = () => {
+  const { data } = useContentData();
+
   return (
     <div
       className="min-h-screen"
       style={{ background: "linear-gradient(to right, #123233, #225150)" }}
     >
-      {/* Page Header */}
       <section className="pt-0 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -14,16 +16,17 @@ export const AboutUs = () => {
               className="text-5xl md:text-6xl font-normal text-[#E8D28E] mb-4"
               style={{ fontFamily: "'Noto Serif', serif" }}
             >
-              About Us
+              {data?.aboutUs?.title || "About Us"}
             </h1>
             <p className="text-white text-lg italic">
-              <em>Crafting Excellence in Every Detail</em>
+              <em>
+                {data?.aboutUs?.subtitle ||
+                  "Crafting Excellence in Every Detail"}
+              </em>
             </p>
           </div>
 
-          {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column - Profile */}
             <div className="lg:col-span-4">
               <div className="text-center">
                 <div
@@ -34,7 +37,7 @@ export const AboutUs = () => {
                   }}
                 >
                   <img
-                    src="/images/user-pic.png"
+                    src={data?.aboutUs?.profileImage || "/images/user-pic.png"}
                     alt="Hidden Groove Estates"
                     className="w-full h-full object-cover"
                   />
@@ -43,15 +46,14 @@ export const AboutUs = () => {
                   className="text-3xl font-normal text-[#D1AB2A] mb-2"
                   style={{ fontFamily: "'Noto Serif', serif" }}
                 >
-                  Hidden Groove Estates
+                  {data?.aboutUs?.name || "Hidden Groove Estates"}
                 </h3>
                 <p className="text-white text-base italic">
-                  <em>Professional Excellence</em>
+                  <em>{data?.aboutUs?.tagline || "Professional Excellence"}</em>
                 </p>
               </div>
             </div>
 
-            {/* Right Column - Our History */}
             <div className="lg:col-span-8">
               <div
                 className="rounded-3xl p-8 md:p-11 shadow-lg"
@@ -65,7 +67,7 @@ export const AboutUs = () => {
                     className="text-[#D1AB2A] text-3xl font-normal mb-2"
                     style={{ fontFamily: "'Noto Serif', serif" }}
                   >
-                    Our History
+                    {data?.aboutUs?.history?.title || "Our History"}
                   </h3>
                   <img
                     src="/images/border-line.png"
@@ -74,20 +76,30 @@ export const AboutUs = () => {
                   />
                 </div>
                 <div className="space-y-4 text-white leading-relaxed text-justify">
-                  <p className="mb-4">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Tenetur inventore repudiandae ipsam soluta sint, impedit
-                    voluptatem corporis, eos laborum nulla qui vitae quasi?
-                    Voluptates laboriosam fuga nihil, adipisci repellat animi
-                    dicta id ratione soluta culpa, vero nostrum ad.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                    Sint ab commodi cupiditate enim labore officiis distinctio
-                    nisi, aliquid cum dolor error aut sed repellat. Perspiciatis
-                    eaque doloribus provident numquam aspernatur neque
-                    recusandae omnis.
-                  </p>
+                  {data?.aboutUs?.history?.paragraphs?.map(
+                    (para: string, idx: number) => (
+                      <p key={idx} className={idx === 0 ? "mb-4" : ""}>
+                        {para}
+                      </p>
+                    )
+                  ) || (
+                    <>
+                      <p className="mb-4">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Tenetur inventore repudiandae ipsam soluta sint, impedit
+                        voluptatem corporis, eos laborum nulla qui vitae quasi?
+                        Voluptates laboriosam fuga nihil, adipisci repellat
+                        animi dicta id ratione soluta culpa, vero nostrum ad.
+                      </p>
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur, adipisicing
+                        elit. Sint ab commodi cupiditate enim labore officiis
+                        distinctio nisi, aliquid cum dolor error aut sed
+                        repellat. Perspiciatis eaque doloribus provident numquam
+                        aspernatur neque recusandae omnis.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -95,7 +107,6 @@ export const AboutUs = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="pt-0">
         <section
           className="py-4 flex items-center"
@@ -105,14 +116,15 @@ export const AboutUs = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="md:col-span-8">
                 <p className="text-white text-sm font-medium">
-                  © Copyright 2025, Hidden Groove Estates | All rights reserved.
+                  {data?.footer?.copyright ||
+                    "© Copyright 2025, Hidden Groove Estates | All rights reserved."}
                 </p>
               </div>
               <div className="md:col-span-4">
                 <ul className="flex justify-start md:justify-end space-x-10 list-none items-center">
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.privacy || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Privacy Policy
@@ -120,7 +132,7 @@ export const AboutUs = () => {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href={data?.footer?.links?.terms || "#"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Terms
@@ -128,7 +140,7 @@ export const AboutUs = () => {
                   </li>
                   <li>
                     <a
-                      href="contact-us.html"
+                      href={data?.footer?.links?.contact || "contact-us.html"}
                       className="text-white text-sm hover:text-[#fda31b] transition-colors"
                     >
                       Contact
