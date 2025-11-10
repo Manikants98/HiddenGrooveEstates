@@ -48,7 +48,7 @@
         "id": "6",
         "lotNumber": "Lot 6",
         "size": 20376.25,
-        "price": 326020,
+        "price": 326020.0,
         "available": true
       },
       {
@@ -158,7 +158,7 @@
   "header": {
     "logo": "https://revtripindia.com/hidden_site/images/logo1.png",
     "tagline": {
-      "line1": "Mani Kant Sharma",
+      "line1": "The Most Prestigious",
       "line2": "Neighborhood",
       "line3": "in North Mcallen"
     }
