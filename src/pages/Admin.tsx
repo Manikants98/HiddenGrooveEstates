@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useContentData } from "../hooks/useContentData";
+import { ContentService } from "../services/contentService";
 import type { WebsiteContent } from "../types/content";
 
 export const Admin = () => {
-  const { data, loading, updateData, resetToDefault } = useContentData();
+  const { data, loading } = useContentData();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<WebsiteContent | null>(null);
   const [activeTab, setActiveTab] = useState<
@@ -14,7 +15,7 @@ export const Admin = () => {
 
   useEffect(() => {
     if (data) {
-      const dataCopy = JSON.parse(JSON.stringify(data));
+      const dataCopy = ContentService.deepClone(data);
 
       if (!dataCopy.home.requestTour) {
         dataCopy.home.requestTour = {
@@ -48,7 +49,7 @@ export const Admin = () => {
   const handleChange = (path: string[], value: any) => {
     if (!formData) return;
 
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     let current: any = newData;
 
     for (let i = 0; i < path.length - 1; i++) {
@@ -71,7 +72,7 @@ export const Admin = () => {
   ) => {
     if (!formData) return;
 
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     let current: any = newData;
 
     for (let i = 0; i < path.length; i++) {
@@ -88,7 +89,7 @@ export const Admin = () => {
 
   const handleAddLot = () => {
     if (!formData) return;
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     const newLot = {
       id: String(Date.now()),
       lotNumber: `Lot ${newData.home.lots.length + 1}`,
@@ -103,7 +104,7 @@ export const Admin = () => {
 
   const handleRemoveLot = (index: number) => {
     if (!formData) return;
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     newData.home.lots.splice(index, 1);
     setFormData(newData);
     setSaved(false);
@@ -111,7 +112,7 @@ export const Admin = () => {
 
   const handleAddSliderImage = () => {
     if (!formData) return;
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     newData.home.slider.images.push("");
     setFormData(newData);
     setSaved(false);
@@ -119,59 +120,50 @@ export const Admin = () => {
 
   const handleRemoveSliderImage = (index: number) => {
     if (!formData) return;
-    const newData = JSON.parse(JSON.stringify(formData));
+    const newData = ContentService.deepClone(formData);
     newData.home.slider.images.splice(index, 1);
     setFormData(newData);
     setSaved(false);
   };
 
   const handleSave = () => {
-    if (formData) {
-      updateData(formData);
+    if (!formData) return;
+
+    ContentService.saveWithToast(formData, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    }
+    });
   };
 
   const handleExport = () => {
     if (!formData) return;
-    const dataStr = JSON.stringify(formData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "content.json";
-    link.click();
-    URL.revokeObjectURL(url);
+    ContentService.exportToFile(formData);
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const imported = JSON.parse(event.target?.result as string);
-          setFormData(imported);
-          updateData(imported);
-          setSaved(true);
-          setTimeout(() => setSaved(false), 3000);
-        } catch (err) {
-          alert("Invalid JSON file");
-        }
-      };
-      reader.readAsText(file);
-    }
+    if (!file) return;
+
+    ContentService.importWithToast(file, (imported) => {
+      setFormData(imported);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    });
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     if (
       confirm(
         "Are you sure you want to reset to default content? This will overwrite all changes."
       )
     ) {
-      await resetToDefault();
-      window.location.reload();
+      ContentService.resetWithToast(() => {
+        const backupData = ContentService.getBackupContent();
+        setFormData(ContentService.deepClone(backupData));
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      });
     }
   };
 
@@ -202,9 +194,14 @@ export const Admin = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Content Management
-              </h1>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Content Management
+                </h1>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click "Save Changes" to update content.json directly.
+                </p>
+              </div>
               <a
                 href="/"
                 className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"

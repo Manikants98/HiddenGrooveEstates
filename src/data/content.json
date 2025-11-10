@@ -1,0 +1,174 @@
+{
+  "home": {
+    "slider": {
+      "images": [
+        "/images/banner.jpg",
+        "/images/Hidden-Gloves-Street1.png",
+        "/images/Hidden-Gloves-Street2.png"
+      ],
+      "autoAdvanceInterval": 5000
+    },
+    "lots": [
+      {
+        "id": "1",
+        "lotNumber": "Lot 1",
+        "size": 18596.02,
+        "price": 297536.32,
+        "available": false
+      },
+      {
+        "id": "2",
+        "lotNumber": "Lot 2",
+        "size": 20363.18,
+        "price": 325810.88,
+        "available": true
+      },
+      {
+        "id": "3",
+        "lotNumber": "Lot 3",
+        "size": 20377.6,
+        "price": 326041.6,
+        "available": true
+      },
+      {
+        "id": "4",
+        "lotNumber": "Lot 4",
+        "size": 20377.15,
+        "price": 326034.4,
+        "available": false
+      },
+      {
+        "id": "5",
+        "lotNumber": "Lot 5",
+        "size": 20376.7,
+        "price": 326027.2,
+        "available": true
+      },
+      {
+        "id": "6",
+        "lotNumber": "Lot 6",
+        "size": 20376.25,
+        "price": 326020,
+        "available": true
+      },
+      {
+        "id": "7",
+        "lotNumber": "Lot 7",
+        "size": 18314.16,
+        "price": 293026.56,
+        "available": true
+      },
+      {
+        "id": "8",
+        "lotNumber": "Lot 8",
+        "size": 19163.99,
+        "price": 306623.83,
+        "available": true
+      }
+    ],
+    "property": {
+      "subType": "Residential Lot",
+      "type": "Land",
+      "status": "Active",
+      "propertyTax": 1000,
+      "hoaFee": 650,
+      "county": "Hidalgo",
+      "subdivision": "City Place at Chapin Subdivision",
+      "livingArea": "Square Feet",
+      "fencing": "None",
+      "utilities": "Water Connected",
+      "sewer": "City Sewer",
+      "irrigation": "Irrigation Water District: Other",
+      "hoaAmenities": "Property Owners' Assoc.",
+      "communityFeatures": "Gated",
+      "elementarySchool": "Lincoln",
+      "highSchool": "Economedes H.S.",
+      "middleSchoolDistrict": "Edinburg ISD",
+      "elementarySchoolDistrict": "Edinburg ISD",
+      "middleSchool": "Memorial",
+      "highSchoolDistrict": "Edinburg ISD",
+      "apn": "City Place At Chapin Lot 25",
+      "roadFrontage": "City Street",
+      "roadSurface": "Paved",
+      "possibleUse": "Residential",
+      "topography": "Level",
+      "hoa": "City Place at Chapin"
+    },
+    "goldenBox": {
+      "title": "An Exclusive And Highly Secluded 8-lot",
+      "subtitle": "Subdivision Situated On Second Street (N Col Rowe Blvd)",
+      "description": "Between Frontera Rd And Northgate Ln."
+    },
+    "streetImage": "/images/Hidden-Gloves-Street3.png",
+    "lotLayoutImage": "/images/LOT_1.png",
+    "aerialViewImage": "/images/aerial-view.png",
+    "requestTour": {
+      "title": "Request Tour",
+      "description": "When would you like to see this home?",
+      "submitButtonText": "Submit Request"
+    },
+    "customHomeBuilder": {
+      "title": "Need a custom home builder?",
+      "paragraph1": "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
+      "paragraph2": "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
+      "formPlaceholders": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "phone": "Mobile Number",
+        "message": "Tell About Your home"
+      },
+      "submitButtonText": "Submit"
+    }
+  },
+  "aboutUs": {
+    "title": "About Us",
+    "subtitle": "Crafting Excellence in Every Detail",
+    "profileImage": "/images/user-pic.png",
+    "name": "Hidden Groove Estates",
+    "tagline": "Professional Excellence",
+    "history": {
+      "title": "Our History",
+      "paragraphs": [
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur inventore repudiandae ipsam soluta sint, impedit voluptatem corporis, eos laborum nulla qui vitae quasi? Voluptates laboriosam fuga nihil, adipisci repellat animi dicta id ratione soluta culpa, vero nostrum ad.",
+        "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sint ab commodi cupiditate enim labore officiis distinctio nisi, aliquid cum dolor error aut sed repellat. Perspiciatis eaque doloribus provident numquam aspernatur neque recusandae omnis."
+      ]
+    }
+  },
+  "contactUs": {
+    "title": "Get In",
+    "highlightedTitle": "Touch",
+    "description": "Ready to discover your dream home in North McAllen's most prestigious neighborhood? We're here to help you every step of the way.",
+    "features": [
+      "Premium Lots Available",
+      "Exclusive Community",
+      "Prime Location"
+    ],
+    "office": {
+      "address": "Second Street, North McAllen\nBetween Frontera Rd and Northgate L.",
+      "phone": "(956) 555-4678",
+      "phoneDisplay": "(956) 555-GROVE",
+      "email": "info@hiddengroove.com",
+      "emailSales": "sales@hiddengroove.com",
+      "hours": {
+        "weekdays": "Mon - Fri: 9AM - 6PM",
+        "weekends": "Sat - Sun: 10AM - 4PM"
+      }
+    }
+  },
+  "header": {
+    "logo": "https://revtripindia.com/hidden_site/images/logo1.png",
+    "tagline": {
+      "line1": "The Most Prestigious",
+      "line2": "Neighborhood",
+      "line3": "in North Mcallen"
+    }
+  },
+  "footer": {
+    "copyright": "© Copyright 2025, Hidden Groove Estates | All rights reserved.",
+    "links": {
+      "privacy": "#",
+      "terms": "#",
+      "contact": "contact-us"
+    }
+  }
+}
