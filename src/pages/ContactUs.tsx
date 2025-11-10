@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useContentData } from "../hooks/useContentData";
+import { useContentData } from "../contexts/ContentContext";
 
 export const ContactUs = () => {
   const { data } = useContentData();

@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ContentProvider } from "./contexts/ContentContext";
 import { Header, ProtectedRoute } from "./components";
 import { Home, AboutUs, ContactUs, Admin, Login } from "./pages";
 
@@ -49,9 +50,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ContentProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ContentProvider>
   );
 }
 

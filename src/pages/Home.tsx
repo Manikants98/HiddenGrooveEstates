@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "../utils/formatters";
-import { useContentData } from "../hooks/useContentData";
-import { samplePropertyListing } from "../data/sampleData";
+import { useContentData } from "../contexts/ContentContext";
 
 export const Home = () => {
   const { data } = useContentData();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const property: any = data?.home?.property || samplePropertyListing.property;
-  const lots = data?.home?.lots || samplePropertyListing.lots;
+  const property: any = data?.home?.property;
+  const lots = data?.home?.lots || [];
   const slides = data?.home?.slider?.images || [
     "/images/banner.jpg",
     "/images/Hidden-Gloves-Street1.png",

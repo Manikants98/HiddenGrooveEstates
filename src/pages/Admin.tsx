@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useContentData } from "../hooks/useContentData";
+import { useContentData } from "../contexts/ContentContext";
 import { ContentService } from "../services/contentService";
 import type { WebsiteContent } from "../types/content";
 
 export const Admin = () => {
-  const { data, loading } = useContentData();
+  const { data, loading, updateData } = useContentData();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<WebsiteContent | null>(null);
   const [activeTab, setActiveTab] = useState<
@@ -129,10 +129,48 @@ export const Admin = () => {
   const handleSave = () => {
     if (!formData) return;
 
-    ContentService.saveWithToast(formData, () => {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    });
+    ContentService.saveWithToast(
+      formData,
+      async (savedContent) => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+
+        // Update form data immediately to reflect changes
+        const updatedData = ContentService.deepClone(savedContent);
+
+        // Ensure required fields exist
+        if (!updatedData.home.requestTour) {
+          updatedData.home.requestTour = {
+            title: "Request Tour",
+            description: "When would you like to see this home?",
+            submitButtonText: "Submit Request",
+          };
+        }
+
+        if (!updatedData.home.customHomeBuilder) {
+          updatedData.home.customHomeBuilder = {
+            title: "Need a custom home builder?",
+            paragraph1:
+              "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
+            paragraph2:
+              "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
+            formPlaceholders: {
+              fullName: "Full Name",
+              email: "Email Address",
+              phone: "Mobile Number",
+              message: "Tell About Your home",
+            },
+            submitButtonText: "Submit",
+          };
+        }
+
+        setFormData(updatedData);
+      },
+      (updatedContent) => {
+        // Update the hook's data state so all components see the changes immediately
+        updateData(updatedContent);
+      }
+    );
   };
 
   const handleExport = () => {

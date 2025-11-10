@@ -42,12 +42,17 @@ export class ContentService {
 
   static async saveWithToast(
     content: WebsiteContent,
-    onSuccess?: () => void
+    onSuccess?: (savedContent: WebsiteContent) => void,
+    onDataUpdate?: (updatedContent: WebsiteContent) => void
   ): Promise<void> {
     const savePromise = this.save(content).then((result) => {
       if (result.success) {
         this.exportToFile(content);
-        onSuccess?.();
+        // Update the default content reference so reload shows new data
+        if (onDataUpdate) {
+          onDataUpdate(content);
+        }
+        onSuccess?.(content);
         return result;
       } else {
         throw new Error(result.error || "Failed to save content");
