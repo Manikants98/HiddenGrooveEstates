@@ -4,10 +4,10 @@ import { formatCurrency } from "../utils/formatters";
 import { useContentData } from "../contexts/ContentContext";
 
 export const Home = () => {
-  const { data } = useContentData();
+  const { data, loading } = useContentData();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const property: any = data?.home?.property;
+  const property: any = data?.home?.property || {};
   const lots = data?.home?.lots || [];
   const slides = data?.home?.slider?.images || [
     "/images/banner.jpg",
@@ -23,6 +23,17 @@ export const Home = () => {
     }, sliderInterval);
     return () => clearInterval(timer);
   }, [slides.length, sliderInterval]);
+
+  if (loading || !data) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#0A181D" }}
+      >
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -241,7 +252,7 @@ export const Home = () => {
                           SubType
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          {property.subType}
+                          {property.subType || "Residential Lot"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
@@ -253,7 +264,7 @@ export const Home = () => {
                           Type
                         </th>
                         <td className="py-3 px-4 text-white text-sm">
-                          {property.type}
+                          {property.type || "Land"}
                         </td>
                       </tr>
                       <tr style={{ border: "1px solid #2d4348" }}>
