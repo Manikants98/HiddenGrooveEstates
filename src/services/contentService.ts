@@ -11,16 +11,23 @@ export class ContentService {
   private static readonly API_ENDPOINT = "/api/update-content";
 
   static async load(): Promise<WebsiteContent> {
-    try {
-      const response = await fetch("/api/get-content", {
-        cache: "no-store",
-      });
-      if (response.ok) {
-        const storedContent = await response.json();
-        return storedContent as WebsiteContent;
+    const isDev = import.meta.env.DEV;
+
+    if (isDev) {
+      try {
+        const response = await fetch("/api/get-content", {
+          cache: "no-store",
+        });
+        if (response.ok) {
+          const storedContent = await response.json();
+          return storedContent as WebsiteContent;
+        }
+      } catch (error) {
+        console.warn(
+          "Failed to load from Vite API, trying static file:",
+          error
+        );
       }
-    } catch (error) {
-      console.warn("Failed to load from Vite API, trying static file:", error);
     }
 
     try {
@@ -53,6 +60,16 @@ export class ContentService {
   }
 
   static async save(content: WebsiteContent): Promise<SaveResponse> {
+    const isDev = import.meta.env.DEV;
+
+    if (!isDev) {
+      return {
+        success: false,
+        error:
+          "Content updates are only available in development mode. In production, please update public/data/content.json in your repository and redeploy.",
+      };
+    }
+
     try {
       const response = await fetch(this.API_ENDPOINT, {
         method: "POST",
