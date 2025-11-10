@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { kv } from "@vercel/kv";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,13 +26,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    const kvUrl = process.env.KV_REST_API_URL;
+    const kvToken = process.env.KV_REST_API_TOKEN;
+
+    if (!kvUrl || !kvToken) {
+      return res.status(500).json({
+        success: false,
+        error:
+          "Vercel KV not configured. Please follow these steps:\n\n1. Go to your Vercel Dashboard\n2. Select your project\n3. Go to the 'Storage' tab\n4. Click 'Create Database' and select 'KV'\n5. Name it and create it\n6. Vercel will automatically link it\n7. Redeploy your application\n\nSee VERCEL_KV_SETUP.md for detailed instructions.",
+        requiresSetup: true,
+      });
+    }
+
     try {
+      const { kv } = await import("@vercel/kv");
       await kv.set("website-content", content);
     } catch (kvError) {
       return res.status(500).json({
         success: false,
         error:
-          "Vercel KV not configured. Please set up Vercel KV in your project settings.",
+          "Failed to save to Vercel KV. Please ensure Vercel KV is properly configured in your project settings.",
+        requiresSetup: true,
       });
     }
 

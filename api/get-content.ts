@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { kv } from "@vercel/kv";
 import fs from "fs";
 import path from "path";
 
@@ -20,15 +19,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    let storedContent = null;
-    try {
-      storedContent = await kv.get("website-content");
-    } catch (kvError) {
-      console.warn("Vercel KV not available, using default content");
-    }
+    const kvUrl = process.env.KV_REST_API_URL;
+    const kvToken = process.env.KV_REST_API_TOKEN;
 
-    if (storedContent) {
-      return res.status(200).json(storedContent);
+    if (kvUrl && kvToken) {
+      try {
+        const { kv } = await import("@vercel/kv");
+        const storedContent = await kv.get("website-content");
+        if (storedContent) {
+          return res.status(200).json(storedContent);
+        }
+      } catch (kvError) {
+        console.warn("Vercel KV error, using default content:", kvError);
+      }
     }
 
     const defaultContentPath = path.join(

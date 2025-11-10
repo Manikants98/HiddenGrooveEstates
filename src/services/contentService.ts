@@ -7,6 +7,7 @@ export interface SaveResponse {
   success: boolean;
   message?: string;
   error?: string;
+  requiresSetup?: boolean;
 }
 
 export class ContentService {
@@ -64,14 +65,20 @@ export class ContentService {
         onSuccess?.(content);
         return result;
       } else {
-        throw new Error(result.error || "Failed to save content");
+        const errorMsg = result.error || "Failed to save content";
+        if (result.requiresSetup) {
+          throw new Error(
+            `${errorMsg}\n\nPlease set up Vercel KV in your project settings.`
+          );
+        }
+        throw new Error(errorMsg);
       }
     });
 
     toast.promise(savePromise, {
       pending: "Saving content...",
       success: "Content saved successfully! Changes are now live.",
-      error: "Failed to save content",
+      error: "Failed to save content. See error details above.",
     });
   }
 
