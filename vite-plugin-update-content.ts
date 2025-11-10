@@ -10,6 +10,38 @@ export function updateContentPlugin(): Plugin {
   return {
     name: "update-content",
     configureServer(server) {
+      const contentPath = path.resolve(__dirname, "src/data/content.json");
+
+      server.middlewares.use("/api/get-content", (req, res, next) => {
+        if (req.method === "GET") {
+          try {
+            if (fs.existsSync(contentPath)) {
+              const content = fs.readFileSync(contentPath, "utf8");
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(content);
+            } else {
+              res.writeHead(404, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({
+                  success: false,
+                  error: "No content found",
+                })
+              );
+            }
+          } catch (error) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : "Unknown error",
+              })
+            );
+          }
+        } else {
+          next();
+        }
+      });
+
       server.middlewares.use("/api/update-content", (req, res, next) => {
         if (req.method === "POST") {
           let body = "";
@@ -19,10 +51,6 @@ export function updateContentPlugin(): Plugin {
           req.on("end", () => {
             try {
               const content = JSON.parse(body);
-              const contentPath = path.resolve(
-                __dirname,
-                "src/data/content.json"
-              );
               fs.writeFileSync(
                 contentPath,
                 JSON.stringify(content, null, 2),

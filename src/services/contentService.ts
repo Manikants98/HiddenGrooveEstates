@@ -13,6 +13,17 @@ export class ContentService {
   private static readonly API_ENDPOINT = "/api/update-content";
 
   static async load(): Promise<WebsiteContent> {
+    try {
+      const response = await fetch("/api/get-content", {
+        cache: "no-store",
+      });
+      if (response.ok) {
+        const storedContent = await response.json();
+        return storedContent as WebsiteContent;
+      }
+    } catch (error) {
+      console.warn("Failed to load from API, using default content:", error);
+    }
     return defaultContent as WebsiteContent;
   }
 
@@ -59,7 +70,7 @@ export class ContentService {
 
     toast.promise(savePromise, {
       pending: "Saving content...",
-      success: "Content saved successfully to src/data/content.json!",
+      success: "Content saved successfully! Changes are now live.",
       error: "Failed to save content",
     });
   }
