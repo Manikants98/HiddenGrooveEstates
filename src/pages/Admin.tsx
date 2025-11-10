@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useContentData } from "../hooks/useContentData";
 import type { WebsiteContent } from "../types/content";
 
 export const Admin = () => {
   const { data, loading, updateData, resetToDefault } = useContentData();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<WebsiteContent | null>(null);
   const [activeTab, setActiveTab] = useState<
     "home" | "about" | "contact" | "header" | "footer"
@@ -173,6 +175,11 @@ export const Admin = () => {
     }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem("isAuthenticated");
+    navigate("/login");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -236,6 +243,12 @@ export const Admin = () => {
                 }`}
               >
                 {saved ? "✓ Saved!" : "Save Changes"}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Logout
               </button>
             </div>
           </div>

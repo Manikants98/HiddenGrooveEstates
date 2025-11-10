@@ -43,7 +43,7 @@ export const ContactUs = () => {
                   ).map((feature, idx) => (
                     <li
                       key={idx}
-                      className="relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full"
+                      className="relative before:mb-3 pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full"
                     >
                       {feature}
                     </li>
