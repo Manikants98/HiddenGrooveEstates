@@ -2,6 +2,8 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import fs from "fs";
 import path from "path";
 
+const STORAGE_KEY = "website-content";
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -25,12 +27,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (kvUrl && kvToken) {
       try {
         const { kv } = await import("@vercel/kv");
-        const storedContent = await kv.get("website-content");
+        const storedContent = await kv.get(STORAGE_KEY);
         if (storedContent) {
           return res.status(200).json(storedContent);
         }
       } catch (kvError) {
-        console.warn("Vercel KV error, using default content:", kvError);
+        console.warn("Vercel KV error, trying alternatives:", kvError);
+      }
+    }
+
+    const jsonbinApiKey = process.env.JSONBIN_API_KEY;
+    const jsonbinBinId = process.env.JSONBIN_BIN_ID;
+
+    if (jsonbinApiKey && jsonbinBinId) {
+      try {
+        const response = await fetch(
+          `https://api.jsonbin.io/v3/b/${jsonbinBinId}/latest`,
+          {
+            headers: {
+              "X-Master-Key": jsonbinApiKey,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.record) {
+            return res.status(200).json(data.record);
+          }
+        }
+      } catch (jsonbinError) {
+        console.warn("JSONBin error, using default content:", jsonbinError);
       }
     }
 
