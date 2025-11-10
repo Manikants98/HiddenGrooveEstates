@@ -10,7 +10,7 @@ export function updateContentPlugin(): Plugin {
   return {
     name: "update-content",
     configureServer(server) {
-      const contentPath = path.resolve(__dirname, "src/data/content.json");
+      const contentPath = path.resolve(__dirname, "public/data/content.json");
 
       server.middlewares.use("/api/get-content", (req, res, next) => {
         if (req.method === "GET") {

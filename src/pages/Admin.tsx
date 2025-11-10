@@ -195,8 +195,8 @@ export const Admin = () => {
         "Are you sure you want to reset to default content? This will overwrite all changes."
       )
     ) {
-      ContentService.resetWithToast(() => {
-        const backupData = ContentService.getBackupContent();
+      ContentService.resetWithToast(async () => {
+        const backupData = await ContentService.getBackupContent();
         setFormData(ContentService.deepClone(backupData));
         setTimeout(() => {
           window.location.reload();

@@ -1,13 +1,10 @@
 import { toast } from "react-toastify";
 import type { WebsiteContent } from "../types/content";
-import defaultContent from "../data/content.json";
-import backupContent from "../data/content.backup.json";
 
 export interface SaveResponse {
   success: boolean;
   message?: string;
   error?: string;
-  requiresSetup?: boolean;
 }
 
 export class ContentService {
@@ -23,13 +20,36 @@ export class ContentService {
         return storedContent as WebsiteContent;
       }
     } catch (error) {
-      console.warn("Failed to load from API, using default content:", error);
+      console.warn("Failed to load from Vite API, trying static file:", error);
     }
-    return defaultContent as WebsiteContent;
+
+    try {
+      const response = await fetch("/data/content.json", {
+        cache: "no-store",
+      });
+      if (response.ok) {
+        const content = await response.json();
+        return content as WebsiteContent;
+      }
+    } catch (error) {
+      console.warn("Failed to load from static file:", error);
+    }
+
+    return {} as WebsiteContent;
   }
 
-  static getBackupContent(): WebsiteContent {
-    return backupContent as WebsiteContent;
+  static async getBackupContent(): Promise<WebsiteContent> {
+    try {
+      const response = await fetch("/data/content.backup.json", {
+        cache: "no-store",
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (error) {
+      console.warn("Failed to load backup content:", error);
+    }
+    return {} as WebsiteContent;
   }
 
   static async save(content: WebsiteContent): Promise<SaveResponse> {
@@ -66,19 +86,15 @@ export class ContentService {
         return result;
       } else {
         const errorMsg = result.error || "Failed to save content";
-        if (result.requiresSetup) {
-          throw new Error(
-            `${errorMsg}\n\nPlease set up Vercel KV in your project settings.`
-          );
-        }
         throw new Error(errorMsg);
       }
     });
 
     toast.promise(savePromise, {
       pending: "Saving content...",
-      success: "Content saved successfully! Changes are now live.",
-      error: "Failed to save content. See error details above.",
+      success: "Content saved successfully to public/data/content.json!",
+      error:
+        "Failed to save content. Make sure the Vite dev server is running.",
     });
   }
 
@@ -136,7 +152,7 @@ export class ContentService {
   }
 
   static async reset(): Promise<SaveResponse> {
-    const backupData = this.getBackupContent();
+    const backupData = await this.getBackupContent();
     return await this.save(backupData);
   }
 

@@ -47,7 +47,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await ContentService.reset();
       if (result.success) {
-        const backupData = ContentService.getBackupContent();
+        const backupData = await ContentService.getBackupContent();
         setData(backupData);
       } else {
         setError(result.error || "Failed to reset content");
