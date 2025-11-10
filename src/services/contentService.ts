@@ -47,8 +47,6 @@ export class ContentService {
   ): Promise<void> {
     const savePromise = this.save(content).then((result) => {
       if (result.success) {
-        this.exportToFile(content);
-        // Update the default content reference so reload shows new data
         if (onDataUpdate) {
           onDataUpdate(content);
         }
