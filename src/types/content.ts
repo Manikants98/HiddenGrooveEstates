@@ -9,6 +9,7 @@ export interface Lot {
   size: number;
   price: number;
   available: boolean;
+  propertyDetail?: PropertyDetails;
 }
 
 export interface PropertyDetails {

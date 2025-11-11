@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useContentData } from "../contexts/ContentContext";
 import { ContentService } from "../services/contentService";
 import type { WebsiteContent } from "../types/content";
+import { Listbox, Transition } from "@headlessui/react";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
 export const Admin = () => {
   const { data, loading, updateData } = useContentData();
@@ -12,6 +14,9 @@ export const Admin = () => {
     "home" | "about" | "contact" | "header" | "footer"
   >("home");
   const [saved, setSaved] = useState(false);
+  const [expandedLotProperties, setExpandedLotProperties] = useState<
+    Set<number>
+  >(new Set());
 
   useEffect(() => {
     if (data) {
@@ -40,6 +45,28 @@ export const Admin = () => {
           },
           submitButtonText: "Submit",
         };
+      }
+
+      // Ensure property object exists for backward compatibility
+      if (!dataCopy.home.property) {
+        dataCopy.home.property = {
+          subType: "Residential Lot",
+          type: "Land",
+          status: "Active",
+          propertyTax: 1000,
+          hoaFee: 650,
+          county: "Hidalgo",
+          subdivision: "City Place at Chapin Subdivision",
+        };
+      }
+
+      // Ensure each lot has propertyDetail
+      if (dataCopy.home.lots) {
+        dataCopy.home.lots.forEach((lot: any) => {
+          if (!lot.propertyDetail) {
+            lot.propertyDetail = { ...dataCopy.home.property };
+          }
+        });
       }
 
       setFormData(dataCopy);
@@ -90,14 +117,43 @@ export const Admin = () => {
   const handleAddLot = () => {
     if (!formData) return;
     const newData = ContentService.deepClone(formData);
+    const defaultProperty = newData.home.property || {
+      subType: "Residential Lot",
+      type: "Land",
+      status: "Active",
+      propertyTax: 1000,
+      hoaFee: 650,
+      county: "Hidalgo",
+      subdivision: "City Place at Chapin Subdivision",
+    };
     const newLot = {
       id: String(Date.now()),
       lotNumber: `Lot ${newData.home.lots.length + 1}`,
       size: 0,
       price: 0,
       available: true,
+      propertyDetail: { ...defaultProperty },
     };
     newData.home.lots.push(newLot);
+    setFormData(newData);
+    setSaved(false);
+  };
+
+  const handleLotPropertyChange = (
+    lotIndex: number,
+    field: string,
+    value: any
+  ) => {
+    if (!formData) return;
+    const newData = ContentService.deepClone(formData);
+    if (newData.home.lots[lotIndex]) {
+      if (!newData.home.lots[lotIndex].propertyDetail) {
+        newData.home.lots[lotIndex].propertyDetail = {
+          ...newData.home.property,
+        };
+      }
+      (newData.home.lots[lotIndex].propertyDetail as any)[field] = value;
+    }
     setFormData(newData);
     setSaved(false);
   };
@@ -340,7 +396,7 @@ export const Admin = () => {
                           parseInt(e.target.value)
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -360,7 +416,7 @@ export const Admin = () => {
                               newImages
                             );
                           }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded"
                           placeholder="/images/banner.jpg"
                         />
                         <button
@@ -385,95 +441,644 @@ export const Admin = () => {
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Lots
                 </h3>
-                <div className="space-y-4">
-                  {formData.home.lots.map((lot, idx) => (
-                    <div key={lot.id} className="rounded-lg p-4 bg-gray-50">
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Lot Number
-                          </label>
-                          <input
-                            type="text"
-                            value={lot.lotNumber}
-                            onChange={(e) =>
-                              handleArrayChange(
-                                ["home", "lots"],
-                                idx,
-                                "lotNumber",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Size (sq ft)
-                          </label>
-                          <input
-                            type="number"
-                            value={lot.size}
-                            onChange={(e) =>
-                              handleArrayChange(
-                                ["home", "lots"],
-                                idx,
-                                "size",
-                                parseFloat(e.target.value)
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Price ($)
-                          </label>
-                          <input
-                            type="number"
-                            value={lot.price}
-                            onChange={(e) =>
-                              handleArrayChange(
-                                ["home", "lots"],
-                                idx,
-                                "price",
-                                parseFloat(e.target.value)
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Available
-                          </label>
-                          <select
-                            value={lot.available ? "true" : "false"}
-                            onChange={(e) =>
-                              handleArrayChange(
-                                ["home", "lots"],
-                                idx,
-                                "available",
-                                e.target.value === "true"
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                          >
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                          </select>
-                        </div>
-                        <div className="flex items-end">
-                          <button
-                            onClick={() => handleRemoveLot(idx)}
-                            className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse bg-white rounded-lg shadow">
+                    <thead>
+                      <tr className="bg-gray-200">
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Lot Number
+                        </th>
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Size (sq ft)
+                        </th>
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Price ($)
+                        </th>
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Available
+                        </th>
+                        <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formData.home.lots.map((lot, idx) => (
+                        <React.Fragment key={lot.id}>
+                          <tr className="hover:bg-gray-50 transition-colors">
+                            <td className="border border-gray-300 px-4 py-2">
+                              <input
+                                type="text"
+                                value={lot.lotNumber}
+                                onChange={(e) =>
+                                  handleArrayChange(
+                                    ["home", "lots"],
+                                    idx,
+                                    "lotNumber",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <input
+                                type="number"
+                                value={lot.size}
+                                onChange={(e) =>
+                                  handleArrayChange(
+                                    ["home", "lots"],
+                                    idx,
+                                    "size",
+                                    parseFloat(e.target.value)
+                                  )
+                                }
+                                className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <input
+                                type="number"
+                                value={lot.price}
+                                onChange={(e) =>
+                                  handleArrayChange(
+                                    ["home", "lots"],
+                                    idx,
+                                    "price",
+                                    parseFloat(e.target.value)
+                                  )
+                                }
+                                className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <Listbox
+                                value={lot.available ? "true" : "false"}
+                                onChange={(value) =>
+                                  handleArrayChange(
+                                    ["home", "lots"],
+                                    idx,
+                                    "available",
+                                    value === "true"
+                                  )
+                                }
+                              >
+                                <div className="relative">
+                                  <Listbox.Button className="relative w-full cursor-default rounded border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    <span className="block truncate">
+                                      {lot.available ? "Yes" : "No"}
+                                    </span>
+                                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                      <ChevronUpDownIcon
+                                        className="h-5 w-5 text-gray-400"
+                                        aria-hidden="true"
+                                      />
+                                    </span>
+                                  </Listbox.Button>
+                                  <Transition
+                                    as={React.Fragment}
+                                    leave="transition ease-in duration-100"
+                                    leaveFrom="opacity-100"
+                                    leaveTo="opacity-0"
+                                  >
+                                    <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded bg-white py-1 text-base shadow-lg focus:outline-none sm:text-sm">
+                                      {["true", "false"].map((option) => (
+                                        <Listbox.Option
+                                          key={option}
+                                          className={({ active }) =>
+                                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                              active
+                                                ? "bg-blue-100 text-blue-900"
+                                                : "text-gray-900"
+                                            }`
+                                          }
+                                          value={option}
+                                        >
+                                          {({ selected }) => (
+                                            <>
+                                              <span
+                                                className={`block truncate ${
+                                                  selected
+                                                    ? "font-medium"
+                                                    : "font-normal"
+                                                }`}
+                                              >
+                                                {option === "true"
+                                                  ? "Yes"
+                                                  : "No"}
+                                              </span>
+                                              {selected ? (
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                                                  <CheckIcon
+                                                    className="h-5 w-5"
+                                                    aria-hidden="true"
+                                                  />
+                                                </span>
+                                              ) : null}
+                                            </>
+                                          )}
+                                        </Listbox.Option>
+                                      ))}
+                                    </Listbox.Options>
+                                  </Transition>
+                                </div>
+                              </Listbox>
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    const newExpanded = new Set(
+                                      expandedLotProperties
+                                    );
+                                    if (newExpanded.has(idx)) {
+                                      newExpanded.delete(idx);
+                                    } else {
+                                      newExpanded.add(idx);
+                                    }
+                                    setExpandedLotProperties(newExpanded);
+                                  }}
+                                  className="w-8 h-8 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center transition-colors"
+                                  title={
+                                    expandedLotProperties.has(idx)
+                                      ? "Hide Details"
+                                      : "Show Details"
+                                  }
+                                >
+                                  <i className="fa-solid fa-circle-info"></i>
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveLot(idx)}
+                                  className="w-8 h-8 bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center transition-colors"
+                                  title="Remove Lot"
+                                >
+                                  <i className="fa-solid fa-trash"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {expandedLotProperties.has(idx) && (
+                            <tr
+                              className="transition-all duration-500 ease-in-out"
+                              style={{
+                                animation: "fadeInSlideDown 0.5s ease-in-out",
+                              }}
+                            >
+                              <td
+                                colSpan={5}
+                                className="border border-gray-300 px-4 py-4 bg-gray-50"
+                              >
+                                <div
+                                  className="transition-all duration-500 ease-in-out"
+                                  style={{
+                                    animation: "fadeIn 0.5s ease-in-out",
+                                  }}
+                                >
+                                  {lot.propertyDetail && (
+                                    <>
+                                      <h4 className="text-lg font-semibold mb-3 text-gray-700">
+                                        Property Details for {lot.lotNumber}
+                                      </h4>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            SubType
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.subType || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "subType",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Type
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.type || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "type",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Status
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.status || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "status",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Property Tax
+                                          </label>
+                                          <input
+                                            type="number"
+                                            value={
+                                              lot.propertyDetail.propertyTax ||
+                                              0
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "propertyTax",
+                                                parseInt(e.target.value) || 0
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            HOA Fee
+                                          </label>
+                                          <input
+                                            type="number"
+                                            value={
+                                              lot.propertyDetail.hoaFee || 0
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "hoaFee",
+                                                parseInt(e.target.value) || 0
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            County
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.county || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "county",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Subdivision
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.subdivision ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "subdivision",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            HOA
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={lot.propertyDetail.hoa || ""}
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "hoa",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Fencing
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.fencing || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "fencing",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Utilities
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.utilities || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "utilities",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Sewer
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.sewer || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "sewer",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Irrigation
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.irrigation ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "irrigation",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            HOA Amenities
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.hoaAmenities ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "hoaAmenities",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Community Features
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail
+                                                .communityFeatures || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "communityFeatures",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Elementary School
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail
+                                                .elementarySchool || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "elementarySchool",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            High School
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.highSchool ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "highSchool",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Middle School
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.middleSchool ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "middleSchool",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            APN
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={lot.propertyDetail.apn || ""}
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "apn",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Road Frontage
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.roadFrontage ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "roadFrontage",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Road Surface
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.roadSurface ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "roadSurface",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Possible Use
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.possibleUse ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "possibleUse",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Topography
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={
+                                              lot.propertyDetail.topography ||
+                                              ""
+                                            }
+                                            onChange={(e) =>
+                                              handleLotPropertyChange(
+                                                idx,
+                                                "topography",
+                                                e.target.value
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4">
                   <button
                     onClick={handleAddLot}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
@@ -483,365 +1088,371 @@ export const Admin = () => {
                 </div>
               </div>
 
-              <div className="pb-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
-                  Property Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      SubType
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.subType}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "subType"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Type
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.type}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "type"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.status}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "status"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Property Tax
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.home.property.propertyTax}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "propertyTax"],
-                          parseInt(e.target.value)
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      HOA Fee
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.home.property.hoaFee}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "hoaFee"],
-                          parseInt(e.target.value)
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      County
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.county}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "county"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subdivision
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.subdivision}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "subdivision"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      HOA
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.hoa || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "hoa"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Fencing
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.fencing || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "fencing"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Utilities
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.utilities || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "utilities"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Sewer
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.sewer || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "sewer"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Irrigation
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.irrigation || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "irrigation"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      HOA Amenities
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.hoaAmenities || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "hoaAmenities"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Community Features
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.communityFeatures || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "communityFeatures"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Elementary School
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.elementarySchool || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "elementarySchool"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      High School
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.highSchool || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "highSchool"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Middle School
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.middleSchool || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "middleSchool"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      APN
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.apn || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "apn"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Road Frontage
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.roadFrontage || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "roadFrontage"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Road Surface
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.roadSurface || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "roadSurface"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Possible Use
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.possibleUse || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "possibleUse"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Topography
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.property.topography || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "property", "topography"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
+              {formData.home.property && (
+                <div className="pb-6">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
+                    Default Property Details (Fallback)
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    This section is kept for backward compatibility. Property
+                    details are now managed per lot above.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        SubType
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.subType || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "subType"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Type
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.type || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "type"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.status || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "status"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Property Tax
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.home.property.propertyTax || 0}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "propertyTax"],
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        HOA Fee
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.home.property.hoaFee || 0}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "hoaFee"],
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        County
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.county || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "county"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Subdivision
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.subdivision || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "subdivision"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        HOA
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.hoa || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "hoa"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fencing
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.fencing || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "fencing"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Utilities
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.utilities || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "utilities"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Sewer
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.sewer || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "sewer"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Irrigation
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.irrigation || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "irrigation"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        HOA Amenities
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.hoaAmenities || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "hoaAmenities"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Community Features
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.communityFeatures || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "communityFeatures"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Elementary School
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.elementarySchool || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "elementarySchool"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        High School
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.highSchool || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "highSchool"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Middle School
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.middleSchool || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "middleSchool"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        APN
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.apn || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "apn"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Road Frontage
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.roadFrontage || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "roadFrontage"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Road Surface
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.roadSurface || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "roadSurface"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Possible Use
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.possibleUse || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "possibleUse"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Topography
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.home.property.topography || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "property", "topography"],
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
@@ -861,7 +1472,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -877,7 +1488,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -892,7 +1503,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       rows={3}
                     />
                   </div>
@@ -914,7 +1525,7 @@ export const Admin = () => {
                       onChange={(e) =>
                         handleChange(["home", "streetImage"], e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -927,7 +1538,7 @@ export const Admin = () => {
                       onChange={(e) =>
                         handleChange(["home", "lotLayoutImage"], e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -943,7 +1554,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -967,7 +1578,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -982,7 +1593,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       rows={2}
                     />
                   </div>
@@ -999,7 +1610,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -1023,7 +1634,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1038,7 +1649,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       rows={4}
                     />
                   </div>
@@ -1054,7 +1665,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       rows={4}
                     />
                   </div>
@@ -1084,7 +1695,7 @@ export const Admin = () => {
                               e.target.value
                             )
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       <div>
@@ -1108,7 +1719,7 @@ export const Admin = () => {
                               e.target.value
                             )
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       <div>
@@ -1132,7 +1743,7 @@ export const Admin = () => {
                               e.target.value
                             )
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       <div>
@@ -1156,7 +1767,7 @@ export const Admin = () => {
                               e.target.value
                             )
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                     </div>
@@ -1174,7 +1785,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -1196,7 +1807,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["aboutUs", "title"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1210,7 +1821,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["aboutUs", "subtitle"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1224,7 +1835,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["aboutUs", "profileImage"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1238,7 +1849,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["aboutUs", "name"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1252,7 +1863,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["aboutUs", "tagline"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1273,7 +1884,7 @@ export const Admin = () => {
                         e.target.value
                       )
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="mt-4">
@@ -1294,7 +1905,7 @@ export const Admin = () => {
                           newParas
                         );
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
                       rows={4}
                     />
                   ))}
@@ -1320,7 +1931,7 @@ export const Admin = () => {
                     onChange={(e) =>
                       handleChange(["contactUs", "title"], e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -1336,7 +1947,7 @@ export const Admin = () => {
                         e.target.value
                       )
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -1350,7 +1961,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["contactUs", "description"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   rows={3}
                 />
               </div>
@@ -1369,7 +1980,7 @@ export const Admin = () => {
                       newFeatures[idx] = e.target.value;
                       handleChange(["contactUs", "features"], newFeatures);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
                   />
                 ))}
               </div>
@@ -1391,7 +2002,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       rows={3}
                     />
                   </div>
@@ -1408,7 +2019,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1424,7 +2035,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1440,7 +2051,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1456,7 +2067,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1472,7 +2083,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1488,7 +2099,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -1510,7 +2121,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["header", "logo"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1532,7 +2143,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1548,7 +2159,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1564,7 +2175,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -1586,7 +2197,7 @@ export const Admin = () => {
                   onChange={(e) =>
                     handleChange(["footer", "copyright"], e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1608,7 +2219,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1624,7 +2235,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1640,7 +2251,7 @@ export const Admin = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>

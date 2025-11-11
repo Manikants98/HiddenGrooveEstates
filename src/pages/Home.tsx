@@ -2,19 +2,35 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "../utils/formatters";
 import { useContentData } from "../contexts/ContentContext";
+import type { PropertyDetails } from "../types/content";
 
 export const Home = () => {
   const { data, loading } = useContentData();
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const property: any = data?.home?.property || {};
   const lots = data?.home?.lots || [];
+  const [selectedLotId, setSelectedLotId] = useState<string | null>(
+    lots.length > 0 ? lots[0].id : null
+  );
+
+  // Get selected lot or default to first lot
+  const selectedLot = lots.find((lot) => lot.id === selectedLotId) || lots[0];
+  // Access propertyDetail - using type assertion since propertyDetail is optional in Lot interface
+  const property: PropertyDetails =
+    selectedLot?.propertyDetail || ({} as PropertyDetails);
+
   const slides = data?.home?.slider?.images || [
     "/images/banner.jpg",
     "/images/Hidden-Gloves-Street1.png",
     "/images/Hidden-Gloves-Street2.png",
   ];
   const sliderInterval = data?.home?.slider?.autoAdvanceInterval || 5000;
+
+  // Update selected lot when lots data changes
+  useEffect(() => {
+    if (lots.length > 0 && !selectedLotId) {
+      setSelectedLotId(lots[0].id);
+    }
+  }, [lots, selectedLotId]);
 
   useEffect(() => {
     if (slides.length === 0) return;
@@ -131,9 +147,14 @@ export const Home = () => {
                     {lots.map((lot) => (
                       <tr
                         key={lot.id}
+                        onClick={() => setSelectedLotId(lot.id)}
                         className="hover:bg-[#1a3640] transition-colors cursor-pointer"
                         style={{
                           border: "1px solid #243c44",
+                          backgroundColor:
+                            selectedLotId === lot.id
+                              ? "#1a3640"
+                              : "transparent",
                         }}
                       >
                         <td className="py-1 px-3 text-white font-medium text-xs uppercase">

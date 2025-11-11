@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
 import { useContentData } from "../contexts/ContentContext";
 
 export const Header = () => {
@@ -21,17 +20,20 @@ export const Header = () => {
 
   return (
     <header style={{ background: getBackground() }}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex justify-between items-center">
           {/* Logo - Left */}
-          <Link to="/" className="flex items-center me-5">
+          <Link
+            to="/"
+            className="flex items-center shrink-0 pr-4 sm:pr-6 md:pr-8"
+          >
             <img
               src={
                 data?.header?.logo ||
                 "https://revtripindia.com/hidden_site/images/logo1.png"
               }
               alt="Hidden Groove Estates Logo"
-              className="h-24 md:h-28 w-auto"
+              className="h-18 lg:h-28 xl:h-32 w-auto"
             />
           </Link>
 
@@ -63,19 +65,25 @@ export const Header = () => {
             </Link>
           </div>
 
-          {/* Tagline - Right */}
-          <div className="hidden lg:flex ml-auto flex-nowrap justify-end text-start">
-            <h4
-              className="mb-0 leading-6"
-              style={{ fontFamily: "'Edu NSW ACT Cursive', cursive" }}
-            >
-              <span className="text-[#D1AB2A] text-lg font-semibold block">
+          {/* Tagline - Center/Right (Visible on Mobile and Desktop) */}
+          <div className="flex flex-1 justify-start md:justify-center items-center min-w-0 px-4 sm:px-6 md:px-8">
+            <h4 className="mb-0 leading-tight text-left">
+              <span
+                className="text-[#D1AB2A] text-xs sm:text-sm md:text-lg font-semibold block whitespace-nowrap"
+                style={{ fontFamily: "'Edu NSW ACT Cursive', cursive" }}
+              >
                 {data?.header?.tagline?.line1 || "The Most Prestigious"}
               </span>
-              <span className="text-white text-xl font-semibold block">
+              <span
+                className="text-white text-sm sm:text-base md:text-xl font-bold block whitespace-nowrap"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
                 {data?.header?.tagline?.line2 || "Neighborhood"}
               </span>
-              <span className="text-[#D1AB2A] text-sm font-normal block">
+              <span
+                className="text-[#D1AB2A] text-xs sm:text-xs md:text-sm font-normal block whitespace-nowrap"
+                style={{ fontFamily: "'Edu NSW ACT Cursive', cursive" }}
+              >
                 {data?.header?.tagline?.line3 || "in North Mcallen"}
               </span>
             </h4>
@@ -83,38 +91,41 @@ export const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded hover:bg-[#1a3640] transition-colors"
+            className="md:hidden pl-4 sm:pl-6 shrink-0"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? (
-              <X size={24} className="text-white" />
-            ) : (
-              <Menu size={24} className="text-white" />
-            )}
+            <img
+              src="https://revtripindia.com/hidden_site/images/menuW.png"
+              alt="Menu"
+              className="w-6 h-6"
+            />
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-3 border-t border-[#1a3640] pt-4">
+          <div className="md:hidden mt-6 pb-4">
             <Link
               to="/"
-              className="block text-white hover:text-[#F6BA33] transition-colors font-medium py-2"
+              className="block text-white hover:text-[#F6BA33] transition-colors font-bold text-base py-4"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Link
               to="/about-us"
-              className="block text-white hover:text-[#F6BA33] transition-colors font-medium py-2"
+              className="block text-white hover:text-[#F6BA33] transition-colors font-bold text-base py-4"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               About Us
             </Link>
             <Link
               to="/contact-us"
-              className="block text-white hover:text-[#F6BA33] transition-colors font-medium py-2"
+              className="block text-white hover:text-[#F6BA33] transition-colors font-bold text-base py-4"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Contact Us!
