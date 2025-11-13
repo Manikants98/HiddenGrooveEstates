@@ -12,11 +12,13 @@ export const Home = () => {
     lots.length > 0 ? lots[0].id : null
   );
 
-  // Get selected lot or default to first lot
   const selectedLot = lots.find((lot) => lot.id === selectedLotId) || lots[0];
-  // Access propertyDetail - using type assertion since propertyDetail is optional in Lot interface
+  const firstLotPropertyDetail =
+    lots.length > 0 ? lots[0]?.propertyDetail : undefined;
   const property: PropertyDetails =
-    selectedLot?.propertyDetail || ({} as PropertyDetails);
+    selectedLot?.propertyDetail ||
+    firstLotPropertyDetail ||
+    ({} as PropertyDetails);
 
   const slides = data?.home?.slider?.images || [
     "/images/banner.jpg",
@@ -25,7 +27,6 @@ export const Home = () => {
   ];
   const sliderInterval = data?.home?.slider?.autoAdvanceInterval || 5000;
 
-  // Update selected lot when lots data changes
   useEffect(() => {
     if (lots.length > 0 && !selectedLotId) {
       setSelectedLotId(lots[0].id);
@@ -61,8 +62,8 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen" style={{ background: "#0A181D" }}>
-      <section className="px-4 md:px-10 py-6">
-        <div className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
+      <section className="px-4 lg:px-10 pb-6">
+        <div className="relative h-[240px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
           {slides.map((slide, index) => (
             <div
               key={index}
@@ -73,7 +74,7 @@ export const Home = () => {
               <img
                 src={slide}
                 alt={`Slide ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-auto lg:h-full object-cover"
               />
             </div>
           ))}
@@ -92,25 +93,10 @@ export const Home = () => {
           >
             ›
           </button>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide
-                    ? "bg-white w-8"
-                    : "bg-white/50 hover:bg-white/75"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
       </section>
 
-      <section className="py-6 px-10 sm:px-10 lg:px-10">
+      <section className="pb-6 px-4 sm:px-10 lg:px-10">
         <div className="mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
             <div className="lg:col-span-5">
@@ -205,8 +191,8 @@ export const Home = () => {
                 }}
               >
                 <img
-                  src={data?.home?.lotLayoutImage || "/images/LOT_1.png"}
-                  alt="Lot Layout"
+                  src={selectedLot?.lotImage || "/images/LOT_1.png"}
+                  alt="Lot Image"
                   className="h-auto object-contain rounded-xl"
                 />
               </div>
@@ -247,13 +233,13 @@ export const Home = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div
-                className="rounded-3xl p-8 shadow-lg"
+                className="rounded-xl p-4 lg:p-8 shadow-lg"
                 style={{
                   backgroundColor: "#18272B",
                   border: "1px solid #3C412A",
                 }}
               >
-                <div className="mb-6 pb-4 border-b-2 border-[#D1AB2A]">
+                <div className="lg:mb-6 mb-3 pb-4 border-b-2 border-[#D1AB2A]">
                   <h3
                     className="text-2xl md:text-3xl font-semibold text-[#D1AB2A]"
                     style={{ fontFamily: "'Noto Serif', serif" }}
@@ -268,7 +254,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           SubType
                         </th>
@@ -280,7 +269,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Type
                         </th>
@@ -292,7 +284,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Living Area
                         </th>
@@ -304,7 +299,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Status
                         </th>
@@ -318,7 +316,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Property Tax
                         </th>
@@ -330,7 +331,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           HOA Free
                         </th>
@@ -342,7 +346,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           HOA
                         </th>
@@ -371,7 +378,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Fencing
                         </th>
@@ -400,7 +410,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Utilities
                         </th>
@@ -415,7 +428,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Sewer
                         </th>
@@ -427,7 +443,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Irrigation
                         </th>
@@ -443,7 +462,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           HOA Amenities
                         </th>
@@ -475,7 +497,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           County
                         </th>
@@ -487,7 +512,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Subdivision
                         </th>
@@ -499,7 +527,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Community Features
                         </th>
@@ -511,7 +542,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Eementarv School
                         </th>
@@ -523,7 +557,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           High School
                         </th>
@@ -535,7 +572,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Middle School District
                         </th>
@@ -547,7 +587,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Elementary School District
                         </th>
@@ -559,7 +602,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Middle School
                         </th>
@@ -571,7 +617,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           High School District
                         </th>
@@ -583,7 +632,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           APN
                         </th>
@@ -615,7 +667,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Road Frontage
                         </th>
@@ -627,7 +682,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Road Surface
                         </th>
@@ -639,7 +697,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Possible Use
                         </th>
@@ -651,7 +712,10 @@ export const Home = () => {
                         <th
                           scope="row"
                           className="text-right py-3 px-4 text-[#D1AB2A] font-medium text-sm"
-                          style={{ width: "50%", border: "1px solid #2d4348" }}
+                          style={{
+                            width: "50%",
+                            border: "1px solid #2d4348",
+                          }}
                         >
                           Topography
                         </th>
@@ -698,13 +762,13 @@ export const Home = () => {
 
             <div className="space-y-6">
               <div
-                className="rounded-3xl p-6 shadow-lg"
+                className="rounded-xl p-4 lg:p-6 shadow-lg"
                 style={{
                   backgroundColor: "#18272B",
                   border: "1px solid #3C412A",
                 }}
               >
-                <div className="mb-4">
+                <div className="lg:mb-4 mb-3">
                   <h4
                     className="text-[#D1AB2A] text-lg font-semibold uppercase mb-3"
                     style={{ fontFamily: "'Noto Serif', serif" }}
@@ -796,13 +860,13 @@ export const Home = () => {
               </div>
 
               <div
-                className="rounded-3xl p-6 shadow-lg"
+                className="rounded-xl p-4 lg:p-6 shadow-lg"
                 style={{
                   background: "linear-gradient(to right, #1B365C, #2A374A)",
                   border: "1px solid #3C412A",
                 }}
               >
-                <div className="mb-4">
+                <div className="lg:mb-4 mb-3">
                   <h4
                     className="text-[#D1AB2A] text-lg font-semibold mb-3"
                     style={{ fontFamily: "'Noto Serif', serif" }}
@@ -925,7 +989,9 @@ export const Home = () => {
       <footer className="pt-0">
         <section
           className="py-4 flex items-center"
-          style={{ background: "linear-gradient(to right, #141C2C, #1E473C)" }}
+          style={{
+            background: "linear-gradient(to right, #141C2C, #1E473C)",
+          }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">

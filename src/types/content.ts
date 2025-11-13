@@ -6,6 +6,7 @@ export interface SliderConfig {
 export interface Lot {
   id: string;
   lotNumber: string;
+  lotImage: string;
   size: number;
   price: number;
   available: boolean;
@@ -69,10 +70,8 @@ export interface CustomHomeBuilderContent {
 export interface HomeContent {
   slider: SliderConfig;
   lots: Lot[];
-  property: PropertyDetails;
   goldenBox: GoldenBox;
   streetImage: string;
-  lotLayoutImage: string;
   aerialViewImage: string;
   requestTour: RequestTourContent;
   customHomeBuilder: CustomHomeBuilderContent;

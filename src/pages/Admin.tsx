@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useContentData } from "../contexts/ContentContext";
-import { ContentService } from "../services/contentService";
+import {
+  updateData as updateDataAPI,
+  uploadImage,
+} from "../services/apiService";
+import {
+  deepClone,
+  exportToFile,
+  importWithToast,
+} from "../utils/contentUtils";
 import type { WebsiteContent } from "../types/content";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { toast } from "react-toastify";
 
+/**
+ * Admin component for managing website content
+ * @returns {JSX.Element}
+ */
 export const Admin = () => {
   const { data, loading, updateData } = useContentData();
   const navigate = useNavigate();
@@ -20,7 +33,7 @@ export const Admin = () => {
 
   useEffect(() => {
     if (data) {
-      const dataCopy = ContentService.deepClone(data);
+      const dataCopy = deepClone(data);
 
       if (!dataCopy.home.requestTour) {
         dataCopy.home.requestTour = {
@@ -47,24 +60,11 @@ export const Admin = () => {
         };
       }
 
-      // Ensure property object exists for backward compatibility
-      if (!dataCopy.home.property) {
-        dataCopy.home.property = {
-          subType: "Residential Lot",
-          type: "Land",
-          status: "Active",
-          propertyTax: 1000,
-          hoaFee: 650,
-          county: "Hidalgo",
-          subdivision: "City Place at Chapin Subdivision",
-        };
-      }
-
-      // Ensure each lot has propertyDetail
-      if (dataCopy.home.lots) {
+      if (dataCopy.home.lots && dataCopy.home.lots.length > 0) {
+        const firstLotPropertyDetail = dataCopy.home.lots[0]?.propertyDetail;
         dataCopy.home.lots.forEach((lot: any) => {
-          if (!lot.propertyDetail) {
-            lot.propertyDetail = { ...dataCopy.home.property };
+          if (!lot.propertyDetail && firstLotPropertyDetail) {
+            lot.propertyDetail = { ...firstLotPropertyDetail };
           }
         });
       }
@@ -73,10 +73,16 @@ export const Admin = () => {
     }
   }, [data]);
 
+  /**
+   * Updates a nested value in the form data using a path array
+   * @param {string[]} path - Array of keys representing the path to the value
+   * @param {any} value - New value to set
+   * @returns {void}
+   */
   const handleChange = (path: string[], value: any) => {
     if (!formData) return;
 
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     let current: any = newData;
 
     for (let i = 0; i < path.length - 1; i++) {
@@ -91,6 +97,14 @@ export const Admin = () => {
     setSaved(false);
   };
 
+  /**
+   * Updates a field in an array item within the form data
+   * @param {string[]} path - Array of keys representing the path to the array
+   * @param {number} index - Index of the item in the array
+   * @param {string} field - Field name to update
+   * @param {any} value - New value to set
+   * @returns {void}
+   */
   const handleArrayChange = (
     path: string[],
     index: number,
@@ -99,7 +113,7 @@ export const Admin = () => {
   ) => {
     if (!formData) return;
 
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     let current: any = newData;
 
     for (let i = 0; i < path.length; i++) {
@@ -114,21 +128,29 @@ export const Admin = () => {
     setSaved(false);
   };
 
+  /**
+   * Adds a new lot to the form data
+   * @returns {void}
+   */
   const handleAddLot = () => {
     if (!formData) return;
-    const newData = ContentService.deepClone(formData);
-    const defaultProperty = newData.home.property || {
-      subType: "Residential Lot",
-      type: "Land",
-      status: "Active",
-      propertyTax: 1000,
-      hoaFee: 650,
-      county: "Hidalgo",
-      subdivision: "City Place at Chapin Subdivision",
-    };
+    const newData = deepClone(formData);
+    const defaultProperty =
+      newData.home.lots.length > 0 && newData.home.lots[0]?.propertyDetail
+        ? { ...newData.home.lots[0].propertyDetail }
+        : {
+            subType: "Residential Lot",
+            type: "Land",
+            status: "Active",
+            propertyTax: 1000,
+            hoaFee: 650,
+            county: "Hidalgo",
+            subdivision: "City Place at Chapin Subdivision",
+          };
     const newLot = {
       id: String(Date.now()),
       lotNumber: `Lot ${newData.home.lots.length + 1}`,
+      lotImage: "",
       size: 0,
       price: 0,
       available: true,
@@ -139,18 +161,35 @@ export const Admin = () => {
     setSaved(false);
   };
 
+  /**
+   * Updates a property detail field for a specific lot
+   * @param {number} lotIndex - Index of the lot in the array
+   * @param {string} field - Property detail field name to update
+   * @param {any} value - New value to set
+   * @returns {void}
+   */
   const handleLotPropertyChange = (
     lotIndex: number,
     field: string,
     value: any
   ) => {
     if (!formData) return;
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     if (newData.home.lots[lotIndex]) {
       if (!newData.home.lots[lotIndex].propertyDetail) {
-        newData.home.lots[lotIndex].propertyDetail = {
-          ...newData.home.property,
-        };
+        const firstLotPropertyDetail =
+          newData.home.lots.length > 0 && newData.home.lots[0]?.propertyDetail
+            ? { ...newData.home.lots[0].propertyDetail }
+            : {
+                subType: "Residential Lot",
+                type: "Land",
+                status: "Active",
+                propertyTax: 1000,
+                hoaFee: 650,
+                county: "Hidalgo",
+                subdivision: "City Place at Chapin Subdivision",
+              };
+        newData.home.lots[lotIndex].propertyDetail = firstLotPropertyDetail;
       }
       (newData.home.lots[lotIndex].propertyDetail as any)[field] = value;
     }
@@ -158,109 +197,210 @@ export const Admin = () => {
     setSaved(false);
   };
 
+  /**
+   * Removes a lot from the form data
+   * @param {number} index - Index of the lot to remove
+   * @returns {void}
+   */
   const handleRemoveLot = (index: number) => {
     if (!formData) return;
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     newData.home.lots.splice(index, 1);
     setFormData(newData);
     setSaved(false);
   };
 
+  /**
+   * Adds a new empty image URL to the slider images array
+   * @returns {void}
+   */
   const handleAddSliderImage = () => {
     if (!formData) return;
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     newData.home.slider.images.push("");
     setFormData(newData);
     setSaved(false);
   };
 
+  /**
+   * Removes an image from the slider images array
+   * @param {number} index - Index of the image to remove
+   * @returns {void}
+   */
   const handleRemoveSliderImage = (index: number) => {
     if (!formData) return;
-    const newData = ContentService.deepClone(formData);
+    const newData = deepClone(formData);
     newData.home.slider.images.splice(index, 1);
     setFormData(newData);
     setSaved(false);
   };
 
-  const handleSave = () => {
+  /**
+   * Uploads an image for a specific lot and updates the lotImage field
+   * @param {number} lotIndex - Index of the lot in the array
+   * @param {File} file - Image file to upload
+   * @returns {Promise<void>}
+   */
+  const handleLotImageUpload = async (
+    lotIndex: number,
+    file: File
+  ): Promise<void> => {
     if (!formData) return;
-
-    ContentService.saveWithToast(
-      formData,
-      async (savedContent) => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-
-        // Update form data immediately to reflect changes
-        const updatedData = ContentService.deepClone(savedContent);
-
-        // Ensure required fields exist
-        if (!updatedData.home.requestTour) {
-          updatedData.home.requestTour = {
-            title: "Request Tour",
-            description: "When would you like to see this home?",
-            submitButtonText: "Submit Request",
-          };
-        }
-
-        if (!updatedData.home.customHomeBuilder) {
-          updatedData.home.customHomeBuilder = {
-            title: "Need a custom home builder?",
-            paragraph1:
-              "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
-            paragraph2:
-              "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
-            formPlaceholders: {
-              fullName: "Full Name",
-              email: "Email Address",
-              phone: "Mobile Number",
-              message: "Tell About Your home",
-            },
-            submitButtonText: "Submit",
-          };
-        }
-
-        setFormData(updatedData);
-      },
-      (updatedContent) => {
-        // Update the hook's data state so all components see the changes immediately
-        updateData(updatedContent);
-      }
-    );
+    try {
+      const imageUrl = await uploadImage(file);
+      handleArrayChange(["home", "lots"], lotIndex, "lotImage", imageUrl);
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to upload image. Please try again."
+      );
+    }
   };
 
+  /**
+   * Uploads an image and updates the specified path in form data
+   * @param {string[]} path - Array of keys representing the path to the image field
+   * @param {File} file - Image file to upload
+   * @returns {Promise<void>}
+   */
+  const handleImageUpload = async (
+    path: string[],
+    file: File
+  ): Promise<void> => {
+    if (!formData) return;
+    try {
+      const imageUrl = await uploadImage(file);
+      handleChange(path, imageUrl);
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to upload image. Please try again."
+      );
+    }
+  };
+
+  /**
+   * Uploads an image for a specific slider image and updates the array
+   * @param {number} index - Index of the slider image in the array
+   * @param {File} file - Image file to upload
+   * @returns {Promise<void>}
+   */
+  const handleSliderImageUpload = async (
+    index: number,
+    file: File
+  ): Promise<void> => {
+    if (!formData) return;
+    try {
+      const imageUrl = await uploadImage(file);
+      const newImages = [...formData.home.slider.images];
+      newImages[index] = imageUrl;
+      handleChange(["home", "slider", "images"], newImages);
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to upload image. Please try again."
+      );
+    }
+  };
+
+  /**
+   * Saves the current form data to the server
+   * @returns {Promise<void>}
+   */
+  const handleSave = async () => {
+    if (!formData) return;
+
+    const savePromise = updateDataAPI(formData)
+      .then((response) => {
+        if (response.status === "success") {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 3000);
+
+          const updatedData = deepClone(response.data);
+
+          if (!updatedData.home.requestTour) {
+            updatedData.home.requestTour = {
+              title: "Request Tour",
+              description: "When would you like to see this home?",
+              submitButtonText: "Submit Request",
+            };
+          }
+
+          if (!updatedData.home.customHomeBuilder) {
+            updatedData.home.customHomeBuilder = {
+              title: "Need a custom home builder?",
+              paragraph1:
+                "We specialize in turning your vision of a dream home into reality. As a premier custom home builder, we offer personalized service, expert craftsmanship, and a commitment to quality that shows in every detail. Whether you're building your forever home or a unique getaway, we work closely with you from design to move-in day, ensuring your home reflects your lifestyle, needs, and personality.",
+              paragraph2:
+                "With decades of experience and a passion for excellence, we handle everything from custom floor plans and premium materials to the latest in energy efficiency and smart home technology. No two families are the same, and your home shouldn't be either. Let us help you create a truly one-of-a-kind space—built to last, designed to inspire. Contact us today to start building something extraordinary.",
+              formPlaceholders: {
+                fullName: "Full Name",
+                email: "Email Address",
+                phone: "Mobile Number",
+                message: "Tell About Your home",
+              },
+              submitButtonText: "Submit",
+            };
+          }
+
+          setFormData(updatedData);
+          updateData(updatedData);
+
+          return response;
+        } else {
+          throw new Error(response.message || "Failed to update content");
+        }
+      })
+      .catch((error: any) => {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update content on server";
+        throw new Error(errorMessage);
+      });
+
+    toast.promise(savePromise, {
+      pending: "Updating content on server...",
+      success: "Content updated successfully on server!",
+      error: "Failed to update content. Please try again.",
+    });
+  };
+
+  /**
+   * Exports the current form data to a JSON file
+   * @returns {void}
+   */
   const handleExport = () => {
     if (!formData) return;
-    ContentService.exportToFile(formData);
+    exportToFile(formData);
   };
 
+  /**
+   * Imports website content from a JSON file
+   * @param {React.ChangeEvent<HTMLInputElement>} e - File input change event
+   * @returns {void}
+   */
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    ContentService.importWithToast(file, (imported) => {
+    importWithToast(file, (imported) => {
       setFormData(imported);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     });
   };
 
-  const handleReset = () => {
-    if (
-      confirm(
-        "Are you sure you want to reset to default content? This will overwrite all changes."
-      )
-    ) {
-      ContentService.resetWithToast(async () => {
-        const backupData = await ContentService.getBackupContent();
-        setFormData(ContentService.deepClone(backupData));
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      });
-    }
-  };
-
+  /**
+   * Logs out the user and redirects to login page
+   * @returns {void}
+   */
   const handleLogout = () => {
     sessionStorage.removeItem("isAuthenticated");
     navigate("/login");
@@ -293,7 +433,7 @@ export const Admin = () => {
                   Content Management
                 </h1>
                 <p className="text-xs text-gray-500 mt-1">
-                  Click "Save Changes" to update content.json directly.
+                  Click "Save Changes" to update content on the server.
                 </p>
               </div>
               <a
@@ -319,12 +459,7 @@ export const Admin = () => {
               >
                 Export JSON
               </button>
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Reset to Default
-              </button>
+
               <button
                 onClick={handleSave}
                 className={`px-6 py-2 rounded font-semibold ${
@@ -419,6 +554,21 @@ export const Admin = () => {
                           className="flex-1 px-3 py-2 border border-gray-300 rounded"
                           placeholder="/images/banner.jpg"
                         />
+                        <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleSliderImageUpload(idx, file);
+                              }
+                              e.target.value = "";
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                         <button
                           onClick={() => handleRemoveSliderImage(idx)}
                           className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -447,6 +597,9 @@ export const Admin = () => {
                       <tr className="bg-gray-200">
                         <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Lot Number
+                        </th>
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Lot Image
                         </th>
                         <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Size (sq ft)
@@ -480,6 +633,39 @@ export const Admin = () => {
                                 }
                                 className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                               />
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={lot.lotImage || ""}
+                                  onChange={(e) =>
+                                    handleArrayChange(
+                                      ["home", "lots"],
+                                      idx,
+                                      "lotImage",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="flex-1 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="/images/lot-image.jpg"
+                                />
+                                <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                                  Upload
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        handleLotImageUpload(idx, file);
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                    className="hidden"
+                                  />
+                                </label>
+                              </div>
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
                               <input
@@ -625,7 +811,7 @@ export const Admin = () => {
                               }}
                             >
                               <td
-                                colSpan={5}
+                                colSpan={6}
                                 className="border border-gray-300 px-4 py-4 bg-gray-50"
                               >
                                 <div
@@ -1088,372 +1274,6 @@ export const Admin = () => {
                 </div>
               </div>
 
-              {formData.home.property && (
-                <div className="pb-6">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
-                    Default Property Details (Fallback)
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    This section is kept for backward compatibility. Property
-                    details are now managed per lot above.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        SubType
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.subType || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "subType"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Type
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.type || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "type"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.status || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "status"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Property Tax
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.home.property.propertyTax || 0}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "propertyTax"],
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        HOA Fee
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.home.property.hoaFee || 0}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "hoaFee"],
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        County
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.county || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "county"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Subdivision
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.subdivision || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "subdivision"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        HOA
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.hoa || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "hoa"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Fencing
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.fencing || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "fencing"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Utilities
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.utilities || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "utilities"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Sewer
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.sewer || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "sewer"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Irrigation
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.irrigation || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "irrigation"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        HOA Amenities
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.hoaAmenities || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "hoaAmenities"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Community Features
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.communityFeatures || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "communityFeatures"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Elementary School
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.elementarySchool || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "elementarySchool"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        High School
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.highSchool || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "highSchool"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Middle School
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.middleSchool || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "middleSchool"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        APN
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.apn || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "apn"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Road Frontage
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.roadFrontage || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "roadFrontage"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Road Surface
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.roadSurface || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "roadSurface"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Possible Use
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.possibleUse || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "possibleUse"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Topography
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.home.property.topography || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            ["home", "property", "topography"],
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <div className="pb-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Golden Info Box
@@ -1514,48 +1334,75 @@ export const Admin = () => {
                 <h3 className="text-xl font-semibold mb-4 text-gray-800 border-l-4 border-blue-500 pl-3">
                   Images
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Street Image
                     </label>
-                    <input
-                      type="text"
-                      value={formData.home.streetImage}
-                      onChange={(e) =>
-                        handleChange(["home", "streetImage"], e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={formData.home.streetImage}
+                        onChange={(e) =>
+                          handleChange(["home", "streetImage"], e.target.value)
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="/images/street-image.jpg"
+                      />
+                      <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(["home", "streetImage"], file);
+                            }
+                            e.target.value = "";
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Lot Layout Image
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.home.lotLayoutImage}
-                      onChange={(e) =>
-                        handleChange(["home", "lotLayoutImage"], e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Aerial View Image
                     </label>
-                    <input
-                      type="text"
-                      value={formData.home.aerialViewImage}
-                      onChange={(e) =>
-                        handleChange(
-                          ["home", "aerialViewImage"],
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={formData.home.aerialViewImage}
+                        onChange={(e) =>
+                          handleChange(
+                            ["home", "aerialViewImage"],
+                            e.target.value
+                          )
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="/images/aerial-view.jpg"
+                      />
+                      <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(
+                                ["home", "aerialViewImage"],
+                                file
+                              );
+                            }
+                            e.target.value = "";
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1829,14 +1676,32 @@ export const Admin = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Profile Image
                 </label>
-                <input
-                  type="text"
-                  value={formData.aboutUs.profileImage}
-                  onChange={(e) =>
-                    handleChange(["aboutUs", "profileImage"], e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.aboutUs.profileImage}
+                    onChange={(e) =>
+                      handleChange(["aboutUs", "profileImage"], e.target.value)
+                    }
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="/images/profile-image.jpg"
+                  />
+                  <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                    Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleImageUpload(["aboutUs", "profileImage"], file);
+                        }
+                        e.target.value = "";
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -2115,14 +1980,32 @@ export const Admin = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Logo URL
                 </label>
-                <input
-                  type="text"
-                  value={formData.header.logo}
-                  onChange={(e) =>
-                    handleChange(["header", "logo"], e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.header.logo}
+                    onChange={(e) =>
+                      handleChange(["header", "logo"], e.target.value)
+                    }
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="/images/logo.png"
+                  />
+                  <label className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer text-xs whitespace-nowrap flex items-center">
+                    Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleImageUpload(["header", "logo"], file);
+                        }
+                        e.target.value = "";
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
               <div className="pt-4">

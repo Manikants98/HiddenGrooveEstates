@@ -33,7 +33,7 @@ export const Header = () => {
                 "https://revtripindia.com/hidden_site/images/logo1.png"
               }
               alt="Hidden Groove Estates Logo"
-              className="h-18 lg:h-28 xl:h-32 w-auto"
+              className="h-[55px] lg:h-[114px] xl:h-[114px] w-auto"
             />
           </Link>
 
@@ -66,7 +66,7 @@ export const Header = () => {
           </div>
 
           {/* Tagline - Center/Right (Visible on Mobile and Desktop) */}
-          <div className="flex flex-1 justify-start md:justify-center items-center min-w-0 px-4 sm:px-6 md:px-8">
+          <div className="flex flex-1 justify-end md:justify-center items-center min-w-0 px-4 sm:px-6 md:px-8">
             <h4 className="mb-0 leading-tight text-left">
               <span
                 className="text-[#D1AB2A] text-xs sm:text-sm md:text-lg font-semibold block whitespace-nowrap"

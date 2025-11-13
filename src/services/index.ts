@@ -1,2 +1,1 @@
-export { ContentService } from "./contentService";
-export type { SaveResponse } from "./contentService";
+export * from "./apiService";
