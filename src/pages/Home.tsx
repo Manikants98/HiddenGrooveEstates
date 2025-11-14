@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "../utils/formatters";
 import { useContentData } from "../contexts/ContentContext";
 import type { PropertyDetails } from "../types/content";
+import "owl.carousel";
 
 export const Home = () => {
   const { data, loading } = useContentData();
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselHeight, setCarouselHeight] = useState("240px");
+  const [sectionPadding, setSectionPadding] = useState("0 16px");
   const lots = data?.home?.lots || [];
   const [selectedLotId, setSelectedLotId] = useState<string | null>(
     lots.length > 0 ? lots[0].id : null
@@ -34,11 +37,118 @@ export const Home = () => {
   }, [lots, selectedLotId]);
 
   useEffect(() => {
+    const updateHeight = () => {
+      if (window.innerWidth >= 1024) {
+        setCarouselHeight("700px");
+      } else if (window.innerWidth >= 768) {
+        setCarouselHeight("500px");
+      } else {
+        setCarouselHeight("240px");
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  useEffect(() => {
+    const updatePadding = () => {
+      if (window.innerWidth >= 768) {
+        setSectionPadding("0 30px");
+      } else {
+        setSectionPadding("0 16px");
+      }
+    };
+
+    updatePadding();
+    window.addEventListener("resize", updatePadding);
+    return () => window.removeEventListener("resize", updatePadding);
+  }, []);
+
+  useEffect(() => {
     if (slides.length === 0) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, sliderInterval);
-    return () => clearInterval(timer);
+
+    let retryCount = 0;
+    const maxRetries = 50;
+    let retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const initCarousel = () => {
+      retryCount++;
+
+      if (!carouselRef.current) {
+        if (retryCount < maxRetries) {
+          retryTimeoutId = setTimeout(initCarousel, 100);
+          return;
+        }
+        return;
+      }
+
+      const jQuery = (window as any).$ || (window as any).jQuery;
+      if (!jQuery?.fn?.owlCarousel) {
+        if (retryCount < maxRetries) {
+          retryTimeoutId = setTimeout(initCarousel, 200);
+          return;
+        }
+        return;
+      }
+
+      const $carousel = jQuery(carouselRef.current);
+      if (!$carousel.length) {
+        if (retryCount < maxRetries) {
+          retryTimeoutId = setTimeout(initCarousel, 100);
+          return;
+        }
+        return;
+      }
+
+      if ($carousel.data("owl.carousel")) {
+        $carousel.trigger("destroy.owl.carousel");
+      }
+
+      $carousel.owlCarousel({
+        items: 1,
+        loop: true,
+        autoplay: true,
+        autoplayTimeout: sliderInterval,
+        autoplayHoverPause: true,
+        nav: false,
+        dots: true,
+        animateOut: "fadeOut",
+        animateIn: "fadeIn",
+        smartSpeed: 1000,
+        autoplaySpeed: 1000,
+        dragEndSpeed: 1000,
+        responsive: {
+          0: { items: 1, nav: false, dots: true },
+          768: { items: 1, nav: false, dots: true },
+          1024: { items: 1, nav: false, dots: true },
+        },
+      });
+
+      setTimeout(() => {
+        $carousel.trigger("refresh.owl.carousel");
+      }, 100);
+    };
+
+    const timeoutId = setTimeout(() => {
+      requestAnimationFrame(initCarousel);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
+      }
+      const jQuery = (window as any).$ || (window as any).jQuery;
+      if (jQuery && carouselRef.current) {
+        const $carousel = jQuery(carouselRef.current);
+        if ($carousel?.trigger) {
+          $carousel.trigger("destroy.owl.carousel");
+          $carousel.off();
+        }
+      }
+    };
   }, [slides.length, sliderInterval]);
 
   if (loading || !data) {
@@ -52,54 +162,46 @@ export const Home = () => {
     );
   }
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
   return (
     <div className="min-h-screen" style={{ background: "#0A181D" }}>
-      <section className="px-4 lg:px-10 pb-6">
-        <div className="relative h-[240px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
+      <section className="pb-6" style={{ padding: sectionPadding }}>
+        <div
+          className="owl-carousel owl-theme"
+          style={{
+            height: carouselHeight,
+            minHeight: carouselHeight,
+            display: "block",
+            visibility: "visible",
+          }}
+          ref={carouselRef}
+        >
           {slides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
-              }`}
+              className="item"
+              style={{
+                height: carouselHeight,
+                minHeight: carouselHeight,
+              }}
             >
               <img
                 src={slide}
                 alt={`Slide ${index + 1}`}
-                className="w-full h-auto lg:h-full object-cover"
+                className="w-full h-full object-cover"
+                style={{
+                  height: carouselHeight,
+                  minHeight: carouselHeight,
+                }}
               />
             </div>
           ))}
-
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/50 rounded-full flex items-center justify-center text-white text-2xl transition-all"
-            aria-label="Previous slide"
-          >
-            ‹
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/50 rounded-full flex items-center justify-center text-white text-2xl transition-all"
-            aria-label="Next slide"
-          >
-            ›
-          </button>
         </div>
       </section>
 
-      <section className="pb-6 px-4 sm:px-10 lg:px-10">
+      <section className="pb-6 px-4 sm:px-[30px] lg:px-[30px]">
         <div className="mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-4">
               <div
                 className="rounded-xl overflow-hidden shadow-lg"
                 style={{
@@ -170,7 +272,7 @@ export const Home = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-8">
               <img
                 src={
                   data?.home?.streetImage || "/images/Hidden-Gloves-Street3.png"

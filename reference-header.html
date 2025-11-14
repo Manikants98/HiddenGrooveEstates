@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reference Header - Hidden Groove Estates</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Edu+NSW+ACT+Cursive:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #0a181d;
+        font-family: "Noto Serif", serif;
+      }
+
+      /* Header Styles */
+      header {
+        background-color: #0a181d;
+        width: 100%;
+        padding: 10px 0;
+      }
+
+      .header-container {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 15px;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+      }
+
+      /* Logo Section */
+      .logo-section {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .logo-section img {
+        height: 114px;
+        width: auto;
+      }
+
+      /* Desktop Navigation */
+      .desktop-nav {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        flex: 1;
+        justify-content: flex-end;
+        margin-right: 20px;
+      }
+
+      .desktop-nav a {
+        color: #ffffff;
+        text-decoration: none;
+        font-family: "Noto Serif", serif;
+        font-size: 18px;
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 4px;
+        transition: color 0.3s ease;
+      }
+
+      .desktop-nav a:hover {
+        color: #f6ba33;
+      }
+
+      .desktop-nav a::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background-color: #f6ba33;
+        transition: width 0.3s ease;
+      }
+
+      .desktop-nav a:hover::after {
+        width: 100%;
+      }
+
+      /* Tagline Section */
+      .tagline-section {
+        display: flex;
+        align-items: center;
+        text-align: left;
+      }
+
+      .tagline-section h4 {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .tagline-line1 {
+        color: #d1ab2a;
+        font-family: "Edu NSW ACT Cursive", cursive;
+        font-size: 18px;
+        font-weight: 600;
+        display: block;
+        white-space: nowrap;
+      }
+
+      .tagline-line2 {
+        color: #ffffff;
+        font-family: "Edu NSW ACT Cursive", cursive;
+        font-size: 24px;
+        font-weight: 700;
+        display: block;
+        white-space: nowrap;
+      }
+
+      .tagline-line3 {
+        color: #d1ab2a;
+        font-family: "Edu NSW ACT Cursive", cursive;
+        font-size: 14px;
+        font-weight: 400;
+        display: block;
+        white-space: nowrap;
+      }
+
+      /* Mobile Menu Button */
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+      }
+
+      .mobile-menu-btn img {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Mobile Navigation */
+      .mobile-nav {
+        display: none;
+        margin-top: 20px;
+        padding-bottom: 16px;
+      }
+
+      .mobile-nav a {
+        display: block;
+        color: #ffffff;
+        text-decoration: none;
+        font-family: "Noto Serif", serif;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 16px 0;
+        transition: color 0.3s ease;
+      }
+
+      .mobile-nav a:hover {
+        color: #f6ba33;
+      }
+
+      .mobile-nav.active {
+        display: block;
+      }
+
+      /* Mobile Styles */
+      @media (max-width: 767px) {
+        .header-content {
+          flex-wrap: wrap;
+        }
+
+        .logo-section img {
+          height: 55px;
+        }
+
+        .desktop-nav {
+          display: none;
+        }
+
+        .tagline-section {
+          flex: 1;
+          justify-content: flex-end;
+          margin-right: 10px;
+        }
+
+        .tagline-line1 {
+          font-size: 12px;
+        }
+
+        .tagline-line2 {
+          font-size: 16px;
+        }
+
+        .tagline-line3 {
+          font-size: 11px;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .mobile-nav {
+          width: 100%;
+        }
+      }
+
+      /* Tablet Styles */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .logo-section img {
+          height: 80px;
+        }
+
+        .desktop-nav {
+          gap: 24px;
+        }
+
+        .desktop-nav a {
+          font-size: 16px;
+        }
+
+        .tagline-line1 {
+          font-size: 16px;
+        }
+
+        .tagline-line2 {
+          font-size: 20px;
+        }
+
+        .tagline-line3 {
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <div class="header-content">
+          <!-- Logo Section -->
+          <div class="logo-section">
+            <a href="/">
+              <img
+                src="https://revtripindia.com/hidden_site/images/logo1.png"
+                alt="Hidden Groove Estates Logo"
+              />
+            </a>
+          </div>
+
+          <!-- Desktop Navigation -->
+          <nav class="desktop-nav">
+            <a href="/">Home</a>
+            <a href="/about-us">About Us</a>
+            <a href="/contact-us">Contact Us!</a>
+          </nav>
+
+          <!-- Tagline Section -->
+          <div class="tagline-section">
+            <h4>
+              <span class="tagline-line1">The Most Prestigious</span>
+              <span class="tagline-line2">Neighborhood</span>
+              <span class="tagline-line3">in North Mcallen</span>
+            </h4>
+          </div>
+
+          <!-- Mobile Menu Button -->
+          <button
+            class="mobile-menu-btn"
+            onclick="toggleMobileMenu()"
+            aria-label="Toggle menu"
+          >
+            <img
+              src="https://revtripindia.com/hidden_site/images/menuW.png"
+              alt="Menu"
+            />
+          </button>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav" id="mobileNav">
+          <a href="/" onclick="toggleMobileMenu()">Home</a>
+          <a href="/about-us" onclick="toggleMobileMenu()">About Us</a>
+          <a href="/contact-us" onclick="toggleMobileMenu()">Contact Us!</a>
+        </nav>
+      </div>
+    </header>
+
+    <script>
+      function toggleMobileMenu() {
+        const mobileNav = document.getElementById("mobileNav");
+        mobileNav.classList.toggle("active");
+      }
+    </script>
+  </body>
+</html>

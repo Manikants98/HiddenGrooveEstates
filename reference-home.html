@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reference Home - Hidden Groove Estates</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #0a181d;
+        color: #fff;
+      }
+
+      /* Carousel Section */
+      .carousel-section {
+        padding: 0 30px;
+        margin-bottom: 24px;
+      }
+
+      /* Owl Carousel Styles - Matching Reference */
+      .owl-carousel {
+        position: relative;
+        height: 700px;
+        display: block;
+        overflow: visible;
+      }
+
+      @media (max-width: 1023px) {
+        .owl-carousel {
+          height: 500px;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .owl-carousel {
+          height: 240px;
+        }
+      }
+
+      .owl-carousel .owl-stage-outer {
+        height: 100%;
+        overflow: hidden;
+        border-radius: 0;
+      }
+
+      .owl-carousel .owl-stage {
+        height: 100%;
+        display: flex;
+      }
+
+      .owl-carousel .owl-item {
+        height: 100%;
+      }
+
+      .owl-carousel .owl-item .item {
+        height: 100%;
+        display: block;
+      }
+
+      .owl-carousel .owl-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Navigation Buttons - Hidden by default on reference */
+      .owl-carousel .owl-nav {
+        display: none;
+      }
+
+      /* Dots Navigation - Matching Reference */
+      .owl-carousel .owl-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+      }
+
+      .owl-carousel .owl-dots .owl-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgb(254, 238, 214);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0;
+      }
+
+      .owl-carousel .owl-dots .owl-dot.active {
+        width: 10px;
+        height: 10px;
+        background: rgb(253, 163, 27);
+      }
+
+      .owl-carousel .owl-dots .owl-dot span {
+        display: none;
+      }
+
+      /* Content Section */
+      .content-section {
+        padding: 0 30px 24px;
+      }
+
+      .container {
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Carousel Section -->
+    <section class="carousel-section">
+      <div id="service-carousel" class="owl-carousel owl-theme">
+        <div class="item">
+          <img
+            src="https://revtripindia.com/hidden_site/images/banner.jpg"
+            alt="Banner"
+          />
+        </div>
+        <div class="item">
+          <img
+            src="https://revtripindia.com/hidden_site/images/Hidden-Gloves-Street1.png"
+            alt="Street View 1"
+          />
+        </div>
+        <div class="item">
+          <img
+            src="https://revtripindia.com/hidden_site/images/Hidden-Gloves-Street2.png"
+            alt="Street View 2"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="content-section">
+      <div class="container">
+        <p style="color: #fff; padding: 20px">
+          This is a reference file for the home page carousel design. The
+          carousel should match the styling from
+          https://revtripindia.com/hidden_site/index.html
+        </p>
+      </div>
+    </section>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#service-carousel").owlCarousel({
+          items: 1,
+          loop: true,
+          autoplay: true,
+          autoplayTimeout: 5000,
+          autoplayHoverPause: true,
+          nav: false,
+          dots: true,
+          smartSpeed: 1000,
+        });
+      });
+    </script>
+  </body>
+</html>
