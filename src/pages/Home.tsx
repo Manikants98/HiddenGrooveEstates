@@ -116,9 +116,9 @@ export const Home = () => {
         dots: true,
         animateOut: "fadeOut",
         animateIn: "fadeIn",
-        smartSpeed: 1000,
-        autoplaySpeed: 1000,
-        dragEndSpeed: 1000,
+        smartSpeed: 500,
+        autoplaySpeed: 500,
+        dragEndSpeed: 500,
         responsive: {
           0: { items: 1, nav: false, dots: true },
           768: { items: 1, nav: false, dots: true },
@@ -198,7 +198,7 @@ export const Home = () => {
         </div>
       </section>
 
-      <section className="pb-6 px-4 sm:px-[30px] lg:px-[30px]">
+      <section className="pb-6 px-4 lg:px-[30px]">
         <div className="mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
             <div className="lg:col-span-4">
@@ -1090,13 +1090,13 @@ export const Home = () => {
 
       <footer className="pt-0">
         <section
-          className="py-4 flex items-center"
+          className="py-4 flex  items-center"
           style={{
             background: "linear-gradient(to right, #141C2C, #1E473C)",
           }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <div className="px-4 lg:px-[30px] flex items-center w-full">
+            <div className="grid grid-cols-1 lg:px-5 md:grid-cols-12 gap-4 w-full items-center">
               <div className="md:col-span-8">
                 <p className="text-white text-sm font-medium">
                   {data?.footer?.copyright ||
@@ -1104,7 +1104,7 @@ export const Home = () => {
                 </p>
               </div>
               <div className="md:col-span-4">
-                <ul className="flex justify-start md:justify-end space-x-10 list-none items-center">
+                <ul className="flex justify-start lg:justify-end space-x-10 list-none items-center">
                   <li>
                     <a
                       href={data?.footer?.links?.privacy || "#"}

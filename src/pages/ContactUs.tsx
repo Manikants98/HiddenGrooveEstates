@@ -1,20 +1,92 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useContentData } from "../contexts/ContentContext";
 
 export const ContactUs = () => {
   const { data } = useContentData();
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
+  const [section1Padding, setSection1Padding] = useState(
+    isDesktop ? "0 0 40px" : "0 0 30px"
+  );
+  const [section1Container, setSection1Container] = useState(
+    isDesktop
+      ? { maxWidth: "1320px", margin: "0 60px", padding: "0 12px" }
+      : { maxWidth: "none", margin: "0", padding: "0 12px" }
+  );
+  const [h1FontSize, setH1FontSize] = useState(isDesktop ? "55px" : "35px");
+  const [h1LineHeight, setH1LineHeight] = useState(isDesktop ? "66px" : "42px");
+  const [h1FontWeight, setH1FontWeight] = useState("700");
+  const [section2Padding, setSection2Padding] = useState(
+    isDesktop ? "0 0 40px" : "0 0 30px"
+  );
+  const [section2Container, setSection2Container] = useState(
+    isDesktop
+      ? { maxWidth: "1320px", margin: "0 60px", padding: "0 12px" }
+      : { maxWidth: "none", margin: "0", padding: "0 12px" }
+  );
+
+  useEffect(() => {
+    const updateStyles = () => {
+      if (window.innerWidth >= 768) {
+        setSection1Padding("0 0 40px");
+        setSection1Container({
+          maxWidth: "1320px",
+          margin: "0 60px",
+          padding: "0 12px",
+        });
+        setH1FontSize("55px");
+        setH1LineHeight("66px");
+        setH1FontWeight("700");
+        setSection2Padding("0 0 40px");
+        setSection2Container({
+          maxWidth: "1320px",
+          margin: "0 60px",
+          padding: "0 12px",
+        });
+      } else {
+        setSection1Padding("0 0 30px");
+        setSection1Container({
+          maxWidth: "none",
+          margin: "0",
+          padding: "0 12px",
+        });
+        setH1FontSize("35px");
+        setH1LineHeight("42px");
+        setH1FontWeight("700");
+        setSection2Padding("0 0 30px");
+        setSection2Container({
+          maxWidth: "none",
+          margin: "0",
+          padding: "0 12px",
+        });
+      }
+    };
+
+    updateStyles();
+    window.addEventListener("resize", updateStyles);
+    return () => window.removeEventListener("resize", updateStyles);
+  }, []);
 
   return (
     <div
       className="min-h-screen"
       style={{ background: "linear-gradient(to right, #242328, #252F40)" }}
     >
-      <section className="pt-0 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+      <section style={{ padding: section1Padding }}>
+        <div style={section1Container}>
+          <div className="text-center" style={{ marginBottom: "0px" }}>
             <h1
-              className="text-5xl md:text-6xl font-bold text-white mb-4"
-              style={{ fontFamily: "'Noto Serif', serif" }}
+              className="text-white"
+              style={{
+                fontFamily: "'Noto Serif', serif",
+                fontSize: h1FontSize,
+                lineHeight: h1LineHeight,
+                fontWeight: h1FontWeight,
+                marginTop: "0px",
+                marginBottom: "8px",
+                paddingTop: "0px",
+                paddingBottom: "0px",
+              }}
             >
               {data?.contactUs?.title || "Get In"}{" "}
               <mark
@@ -22,6 +94,7 @@ export const ContactUs = () => {
                 style={{
                   background: "linear-gradient(to right, #F5B233, #E1832F)",
                   padding: "5px 2px 2px",
+                  display: "inline",
                 }}
               >
                 {data?.contactUs?.highlightedTitle || "Touch"}
@@ -29,11 +102,34 @@ export const ContactUs = () => {
             </h1>
             <div className="flex justify-center">
               <div className="max-w-3xl">
-                <p className="text-white text-base mb-4">
+                <p
+                  className="text-white"
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: "22px",
+                    marginTop: "0px",
+                    marginBottom: "16px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
+                    textAlign: "center",
+                  }}
+                >
                   {data?.contactUs?.description ||
                     "Ready to discover your dream home in North McAllen's most prestigious neighborhood? We're here to help you every step of the way."}
                 </p>
-                <ul className="flex justify-center flex-wrap gap-4 list-none text-sm text-[#5C626F]">
+                <ul
+                  className="flex justify-center flex-wrap list-none"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: "normal",
+                    marginTop: "0px",
+                    marginBottom: "0px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
+                  }}
+                >
                   {(
                     data?.contactUs?.features || [
                       "Premium Lots Available",
@@ -43,8 +139,29 @@ export const ContactUs = () => {
                   ).map((feature, idx) => (
                     <li
                       key={idx}
-                      className="relative before:mb-3 pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#F6BA33] before:rounded-full"
+                      className="text-[#5C626F] relative"
+                      style={{
+                        fontSize: "16px",
+                        marginLeft: "0px",
+                        marginRight:
+                          idx < (data?.contactUs?.features?.length || 3) - 1
+                            ? "16px"
+                            : "0px",
+                        paddingLeft: "16px",
+                        paddingRight: "0px",
+                        display: "list-item",
+                      }}
                     >
+                      <span
+                        className="absolute rounded-full"
+                        style={{
+                          backgroundColor: "#F6BA33",
+                          width: "8px",
+                          height: "8px",
+                          left: "0px",
+                          top: "8px",
+                        }}
+                      ></span>
                       {feature}
                     </li>
                   ))}
@@ -56,10 +173,12 @@ export const ContactUs = () => {
       </section>
 
       <section
-        className="py-12 px-4 sm:px-6 lg:px-8"
-        style={{ background: "linear-gradient(to right, #151E30, #252F40)" }}
+        style={{
+          padding: section2Padding,
+          background: "linear-gradient(to right, #151E30, #252F40)",
+        }}
       >
-        <div className="max-w-7xl mx-auto">
+        <div style={section2Container}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <div
@@ -206,7 +325,6 @@ export const ContactUs = () => {
                 </form>
               </div>
             </div>
-
             <div className="space-y-6">
               <div
                 className="rounded-3xl p-6 md:p-8"
@@ -324,24 +442,24 @@ export const ContactUs = () => {
                       <a
                         href={`mailto:${
                           data?.contactUs?.office?.email ||
-                          "info@hiddengroove.com"
+                          "info@hiddengrooveestates.com"
                         }`}
                         className="text-white"
                       >
                         {data?.contactUs?.office?.email ||
-                          "info@hiddengroove.com"}
+                          "info@hiddengrooveestates.com"}
                       </a>
                     </p>
                     <p className="text-white text-sm">
                       <a
                         href={`mailto:${
                           data?.contactUs?.office?.emailSales ||
-                          "sales@hiddengroove.com"
+                          "sales@hiddengrooveestates.com"
                         }`}
                         className="text-white"
                       >
                         {data?.contactUs?.office?.emailSales ||
-                          "sales@hiddengroove.com"}
+                          "sales@hiddengrooveestates.com"}
                       </a>
                     </p>
                   </div>
@@ -426,11 +544,13 @@ export const ContactUs = () => {
 
       <footer className="pt-0">
         <section
-          className="py-4 flex items-center"
-          style={{ background: "linear-gradient(to right, #141C2C, #1E473C)" }}
+          className="py-4 flex  items-center"
+          style={{
+            background: "linear-gradient(to right, #141C2C, #1E473C)",
+          }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <div className="px-4 lg:px-[30px] flex items-center w-full">
+            <div className="grid grid-cols-1 lg:px-5 md:grid-cols-12 gap-4 w-full items-center">
               <div className="md:col-span-8">
                 <p className="text-white text-sm font-medium">
                   {data?.footer?.copyright ||
@@ -438,7 +558,7 @@ export const ContactUs = () => {
                 </p>
               </div>
               <div className="md:col-span-4">
-                <ul className="flex justify-start md:justify-end space-x-10 list-none items-center">
+                <ul className="flex justify-start lg:justify-end space-x-10 list-none items-center">
                   <li>
                     <a
                       href={data?.footer?.links?.privacy || "#"}
