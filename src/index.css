@@ -2,8 +2,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Edu+NSW+ACT+Cursive:wght@400..700&display=swap");
 @import "tailwindcss";
-@import "owl.carousel/dist/assets/owl.carousel.css";
-@import "owl.carousel/dist/assets/owl.theme.default.css";
 
 @layer base {
   html {

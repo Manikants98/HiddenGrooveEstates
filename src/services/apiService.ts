@@ -39,23 +39,16 @@ export const getData = async (): Promise<WebsiteContent> => {
 export const updateData = async (
   data: WebsiteContent
 ): Promise<UpdateDataResponse> => {
-  const updatePromise = axiosInstance
-    .post<UpdateDataResponse>("/update_json.php", { ...data, data: data })
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error updating data:", error);
-      throw error;
-    });
-
-  toast.promise(updatePromise, {
-    pending: "Updating content on server...",
-    success: "Content updated successfully!",
-    error: "Failed to update content. Please try again.",
-  });
-
-  return updatePromise;
+  try {
+    const response = await axiosInstance.post<UpdateDataResponse>(
+      "/update_json.php",
+      data
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating data:", error);
+    throw error;
+  }
 };
 
 /**
