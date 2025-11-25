@@ -249,7 +249,6 @@ export const Admin = () => {
     try {
       const imageUrl = await uploadImage(file);
       handleArrayChange(["home", "lots"], lotIndex, "lotImage", imageUrl);
-      toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -273,7 +272,6 @@ export const Admin = () => {
     try {
       const imageUrl = await uploadImage(file);
       handleChange(path, imageUrl);
-      toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -299,7 +297,6 @@ export const Admin = () => {
       const newImages = [...formData.home.slider.images];
       newImages[index] = imageUrl;
       handleChange(["home", "slider", "images"], newImages);
-      toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -315,8 +312,7 @@ export const Admin = () => {
    */
   const handleSave = async () => {
     if (!formData) return;
-
-    const savePromise = updateDataAPI(formData)
+    await updateDataAPI(formData)
       .then((response) => {
         if (response.status === "success") {
           setSaved(true);
@@ -364,12 +360,6 @@ export const Admin = () => {
           "Failed to update content on server";
         throw new Error(errorMessage);
       });
-
-    toast.promise(savePromise, {
-      pending: "Updating content on server...",
-      success: "Content updated successfully on server!",
-      error: "Failed to update content. Please try again.",
-    });
   };
 
   /**

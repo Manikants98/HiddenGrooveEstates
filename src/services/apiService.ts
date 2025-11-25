@@ -21,8 +21,10 @@ export interface UploadImageResponse {
  */
 export const getData = async (): Promise<WebsiteContent> => {
   try {
-    const response = await axiosInstance.get<WebsiteContent>("/data.json");
-    return response.data;
+    const response = await axiosInstance.get<WebsiteContent>("/getData.php");
+    console.log(response.data?.data?.data);
+
+    return response.data?.data?.data;
   } catch (error) {
     console.error("Error fetching data:", error);
     throw error;
@@ -38,7 +40,7 @@ export const updateData = async (
   data: WebsiteContent
 ): Promise<UpdateDataResponse> => {
   const updatePromise = axiosInstance
-    .post<UpdateDataResponse>("/update_json.php", data)
+    .post<UpdateDataResponse>("/update_json.php", { ...data, data: data })
     .then((response) => {
       return response.data;
     })

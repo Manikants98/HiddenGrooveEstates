@@ -103,10 +103,7 @@ export const AboutUs = () => {
                 fontFamily: "Poppins, sans-serif",
               }}
             >
-              <em>
-                {data?.aboutUs?.subtitle ||
-                  "Crafting Excellence in Every Detail"}
-              </em>
+              <em>{data?.aboutUs?.subtitle}</em>
             </p>
           </div>
 
