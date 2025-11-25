@@ -313,7 +313,9 @@ export const Admin = () => {
   const handleSave = async () => {
     if (!formData) return;
 
-    const savePromise = updateDataAPI(formData)
+    const payload = deepClone(formData);
+
+    const savePromise = updateDataAPI(payload)
       .then((response) => {
         if (response.status === "success") {
           setSaved(true);

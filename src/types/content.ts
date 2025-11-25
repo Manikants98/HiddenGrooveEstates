@@ -132,6 +132,5 @@ export interface WebsiteContent {
   aboutUs: AboutUsContent;
   contactUs: ContactUsContent;
   header: HeaderContent;
-  data: WebsiteContent;
   footer: FooterContent;
 }

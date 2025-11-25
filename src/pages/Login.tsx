@@ -14,7 +14,9 @@ export const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/data/auth.json");
+      const response = await fetch(`/data/auth.json?_t=${Date.now()}`, {
+        cache: "no-store",
+      });
       const authData = await response.json();
 
       if (email === authData.email && password === authData.password) {

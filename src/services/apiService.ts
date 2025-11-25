@@ -17,14 +17,17 @@ export interface UploadImageResponse {
 
 /**
  * Get website content from the server
- * @returns Promise<WebsiteContent>
+ * @returns {Promise<WebsiteContent>}
  */
 export const getData = async (): Promise<WebsiteContent> => {
   try {
-    const response = await axiosInstance.get<WebsiteContent>("/getData.php");
-    console.log(response.data?.data?.data);
+    const response = await axiosInstance.get<any>("/getData.php");
 
-    return response.data?.data?.data;
+    if (response.data?.data) {
+      return response.data.data as WebsiteContent;
+    }
+
+    return response.data as WebsiteContent;
   } catch (error) {
     console.error("Error fetching data:", error);
     throw error;

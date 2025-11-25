@@ -21,6 +21,13 @@ export const axiosInstance: import("axios").AxiosInstance = axios.create({
  */
 axiosInstance.interceptors.request.use(
   (config) => {
+    if (config.method === "get") {
+      config.params = {
+        ...config.params,
+        _t: Date.now(),
+      };
+    }
+
     return config;
   },
   (error) => {
